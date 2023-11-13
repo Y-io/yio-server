@@ -9,6 +9,7 @@ import {
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { MurLockModuleOptions } from 'murlock/dist/interfaces/murlock-options.interface';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 /**
  * 创建一个每日轮转的传输对象。
@@ -82,6 +83,12 @@ function createDailyRotateTransport(level: string, filename: string) {
       },
     }),
     PrismaModule,
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
   ],
 })
 export class CoreModule {}
