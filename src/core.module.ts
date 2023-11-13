@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { PrismaModule } from './prisma/prisma.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MurLockModule } from 'murlock';
 import {
@@ -82,7 +81,6 @@ function createDailyRotateTransport(level: string, filename: string) {
         };
       },
     }),
-    PrismaModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
