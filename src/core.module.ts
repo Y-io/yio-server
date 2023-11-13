@@ -70,7 +70,7 @@ function createDailyRotateTransport(level: string, filename: string) {
               format: winston.format.combine(
                 winston.format.timestamp(),
                 winston.format.ms(),
-                nestWinstonModuleUtilities.format.nestLike('MyApp', {
+                nestWinstonModuleUtilities.format.nestLike('Yio-App', {
                   colors: true,
                   prettyPrint: true,
                 }),
