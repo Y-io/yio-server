@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
@@ -7,6 +7,8 @@ import { SignInDto } from '@/domain/auth/dto/sign-in.dto';
 import { User } from '@prisma/client';
 import { hash, verify } from '@node-rs/argon2';
 import { SignUpDto } from '@/domain/auth/dto/sign-up.dto';
+
+console.log(ms);
 
 export type UserClaim = Pick<User, 'id' | 'username'> & {
   hasPassword?: boolean;
@@ -27,7 +29,7 @@ export class AuthService {
       },
     });
 
-    if (user) throw new ForbiddenException('账号已经存在');
+    if (user) throw new UnauthorizedException('账号已经存在');
 
     const hashedPassword = await hash(dto.password);
 
@@ -46,30 +48,30 @@ export class AuthService {
       },
     });
 
-    if (!user) throw new ForbiddenException('账号或者密码错误');
+    if (!user) throw new UnauthorizedException('该账号微注册');
     let equal = false;
     try {
       equal = await verify(user.password, dto.password);
     } catch (e) {
-      throw new ForbiddenException('账号或者密码错误');
+      throw new UnauthorizedException('密码验证失败');
     }
 
     if (!equal) {
-      throw new ForbiddenException('账号或者密码错误');
+      throw new UnauthorizedException('密码错误');
     }
 
-    return user;
+    return this.createToken(user.id, user.username);
   }
 
   async createToken(
     userId: string,
     account: string,
-    options: {
-      expiresIn: string;
+    options?: {
+      expiresIn?: string;
     },
   ) {
     const secret = this.config.get('JWT_SECRET');
-    const stringValue = options.expiresIn || this.config.get('JWT_EXPIRES');
+    const stringValue = options?.expiresIn || this.config.get('JWT_EXPIRES');
 
     const expiresIn = ms(stringValue);
 

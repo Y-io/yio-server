@@ -1,14 +1,16 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MurLockModule } from 'murlock';
 import {
   WinstonModule,
   utilities as nestWinstonModuleUtilities,
 } from 'nest-winston';
-import winston from 'winston';
+import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { MurLockModuleOptions } from 'murlock/dist/interfaces/murlock-options.interface';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { PrismaService } from '@/prisma/prisma.service';
+import { hash } from '@node-rs/argon2';
 
 /**
  * 创建一个每日轮转的传输对象。
@@ -89,4 +91,25 @@ function createDailyRotateTransport(level: string, filename: string) {
     ]),
   ],
 })
-export class CoreModule {}
+export class CoreModule implements OnModuleInit {
+  constructor(private prisma: PrismaService) {}
+  async onModuleInit() {
+    await this.createSuperAdmin();
+  }
+
+  /**
+   * Create a system super administrator
+   */
+  private async createSuperAdmin() {
+    const sAdmin = await this.prisma.user.findUnique({
+      where: { username: 'sAdmin' },
+    });
+    if (sAdmin) return;
+    await this.prisma.user.create({
+      data: {
+        username: 'sAdmin',
+        password: await hash('sAdmin'),
+      },
+    });
+  }
+}
