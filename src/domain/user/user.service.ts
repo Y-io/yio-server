@@ -1,5 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '@/prisma/prisma.service';
+import {
+  paginationHelper,
+  transformObjToArr,
+  whereInputHelper,
+} from '@/shared/utils/many-helper';
+import { Prisma } from '@prisma/client';
+import { UserPaginationDto } from '@/domain/user/dto/user-pagination.dto';
 
 @Injectable()
 export class UserService {
@@ -17,5 +24,34 @@ export class UserService {
     }
 
     return userData;
+  }
+
+  async findMany(dto?: UserPaginationDto) {
+    const { page, size, filter } = dto;
+
+    const pagination = paginationHelper(page, size);
+    const where: Prisma.UserWhereInput = whereInputHelper(filter);
+    const orderBy: Prisma.UserOrderByWithRelationInput[] = transformObjToArr(
+      dto.orderBy,
+    );
+
+    const queryArgs = {
+      ...pagination,
+      where,
+      orderBy,
+    };
+
+    const [data, count] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        ...queryArgs,
+        include: {
+          organizations: true,
+          roles: true,
+        },
+      }),
+      this.prisma.user.count(queryArgs),
+    ]);
+
+    return { list: data, page, size, count: count };
   }
 }

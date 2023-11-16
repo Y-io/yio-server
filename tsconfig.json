@@ -18,6 +18,9 @@
     "forceConsistentCasingInFileNames": false,
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
+    "typeRoots": [
+      "./src/typings"
+    ],
     "paths": {
       "@/*": ["src/*"]
     }
