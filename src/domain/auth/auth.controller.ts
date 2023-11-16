@@ -2,9 +2,9 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from '@/domain/auth/auth.service';
 import { SignInDto } from '@/domain/auth/dto/sign-in.dto';
 import { SignUpDto } from '@/domain/auth/dto/sign-up.dto';
-import { ShipAuth } from '@/domain/auth/guards/skip-auth';
+import { SkipAuth } from '@/domain/auth/guards/skip-auth';
 
-@ShipAuth()
+@SkipAuth()
 @Controller({
   path: 'auth',
   version: '1',

@@ -1,10 +1,9 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Request } from '@nestjs/common';
 import { AccountService } from '@/domain/account/account.service';
-import { AuthRequest, JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
+import { AuthRequest } from '@/domain/auth/guards/jwt-auth.guard';
 import { SerializeStrict } from '@/common/decorators/serialize.decorator';
 import { UserDto } from '@/domain/user/dto/user.dto';
 
-@UseGuards(JwtAuthGuard)
 @Controller('account')
 export class AccountController {
   constructor(private accountService: AccountService) {}

@@ -1,8 +1,8 @@
 import { SetMetadata } from '@nestjs/common';
 
-export const IS_SHIP_AUTH_KEY = 'is_ship_auth';
+export const IS_SKIP_AUTH_KEY = 'is_skip_auth';
 
 /**
  * 跳过认证
  */
-export const ShipAuth = () => SetMetadata(IS_SHIP_AUTH_KEY, true);
+export const SkipAuth = () => SetMetadata(IS_SKIP_AUTH_KEY, true);

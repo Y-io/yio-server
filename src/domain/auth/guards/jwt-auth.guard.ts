@@ -1,7 +1,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
-import { IS_SHIP_AUTH_KEY } from './skip-auth';
+import { IS_SKIP_AUTH_KEY } from './skip-auth';
 import { User } from '@prisma/client';
 
 export type AuthRequest = {
@@ -24,7 +24,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   // 遇到以上问题在 tsconfig.json compilerOptions 中配置 preserveSymlinks 为 true
   canActivate(context: ExecutionContext) {
     const isPublic = this.reflector.getAllAndOverride<boolean>(
-      IS_SHIP_AUTH_KEY,
+      IS_SKIP_AUTH_KEY,
       [context.getHandler(), context.getClass()],
     );
 

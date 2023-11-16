@@ -8,8 +8,6 @@ import { User } from '@prisma/client';
 import { hash, verify } from '@node-rs/argon2';
 import { SignUpDto } from '@/domain/auth/dto/sign-up.dto';
 
-console.log(ms);
-
 export type UserClaim = Pick<User, 'id' | 'username'> & {
   hasPassword?: boolean;
 };
