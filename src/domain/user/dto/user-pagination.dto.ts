@@ -1,8 +1,6 @@
 import { IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 import { PaginationDto } from '@/shared/dto/base.dto';
-import { PickType } from '@nestjs/mapped-types';
-import { UserSerializeDto } from '@/domain/user/dto/user-serialize.dto';
 
 class OrderByType {
   [key: string]: 'asc' | 'desc';

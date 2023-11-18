@@ -26,15 +26,18 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   // The inferred type of 'canActivate' cannot be named without a reference to '.pnpm/rxjs@7.8.1/node_modules/rxjs'. This is likely not portable.  A type annotation is necessary.
   // 遇到以上问题在 tsconfig.json compilerOptions 中配置 preserveSymlinks 为 true
   canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_SKIP_AUTH_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    if (isPublic) {
+    if (isSkipAuth(context)) {
       return true;
     }
 
     return super.canActivate(context);
   }
+}
+
+// 检查 Controller 或者 Class Method 是否需要跳过登录校验
+export function isSkipAuth(context: ExecutionContext) {
+  return (
+    Reflect.getMetadata(IS_SKIP_AUTH_KEY, context.getClass()) ||
+    Reflect.getMetadata(IS_SKIP_AUTH_KEY, context.getHandler())
+  );
 }

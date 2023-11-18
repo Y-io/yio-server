@@ -8,6 +8,7 @@ import { Permission } from '@/shared/decorators/permission.decorator';
 import { AuthRequest } from '@/shared/guards/jwt-auth.guard';
 
 import { SUPER_ADMIN } from '@/shared/constants';
+import { SkipAuth } from '@/shared/decorators/skip-auth.decorator';
 
 @Resource({
   name: 'users_manage',

@@ -1,12 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 
-// import { paginationHelper } from '@/shared/utils/many-helper';
+import { paginationHelper } from '@/shared/utils/many-helper';
 import { UserFilterDto } from '@/domain/user/dto/user-pagination.dto';
 
-import { Repository } from 'typeorm';
+import { In, Not, Repository } from 'typeorm';
 import { UserEntity } from '@/domain/user/user.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateUserDto } from '@/domain/user/dto/create-user.dto';
+import { SUPER_ADMIN } from '@/shared/constants';
 
 @Injectable()
 export class UserService {
@@ -52,10 +53,14 @@ export class UserService {
       include?: any;
     },
   ) {
-    // const pagination = paginationHelper(dto.page, dto.pageSize);
+    const pagination = paginationHelper(dto.page, dto.pageSize);
 
     const [list, count] = await this.userRepository.findAndCount({
+      ...pagination,
       order: dto.orderBy,
+      where: {
+        username: Not(In([SUPER_ADMIN])),
+      },
     });
 
     return { list, count, page: dto.page, pageSize: dto.pageSize };

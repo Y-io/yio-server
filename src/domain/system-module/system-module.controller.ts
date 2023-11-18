@@ -1,10 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
 import { Resource } from '@/shared/decorators/resource.decorator';
 import { SystemModuleService } from '@/domain/system-module/system-module.service';
-import { SkipAuthDecorator } from '@/shared/decorators/skip-auth.decorator';
+import { SkipAuth } from '@/shared/decorators/skip-auth.decorator';
 import { Permission } from '@/shared/decorators/permission.decorator';
 
-@SkipAuthDecorator()
+@SkipAuth()
 @Resource({
   name: 'system_modules_manage',
   identify: 'system_modules:manage',

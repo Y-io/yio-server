@@ -1,17 +1,21 @@
 import { CanActivate, ExecutionContext } from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
 import { PERMISSION_DEF } from '@/shared/decorators/permission.decorator';
 import { PermissionEntity } from '@/domain/system-module/entities/permission.entity';
 import { UserEntity } from '@/domain/user/user.entity';
 import { SUPER_ADMIN } from '@/shared/constants';
+import { isSkipAuth } from '@/shared/guards/jwt-auth.guard';
+import { Reflector } from '@nestjs/core';
 
 export class PermissionGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
     const user: UserEntity = request.user;
+    if (isSkipAuth(context)) {
+      return true;
+    }
 
     // 如果没有用户信息，不需要检查
-    if (!user) return true;
+    if (!user) return false;
 
     // 超级管理员
     if (user.username === SUPER_ADMIN) return true;

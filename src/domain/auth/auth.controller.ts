@@ -2,9 +2,9 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from '@/domain/auth/auth.service';
 import { SignInDto } from '@/domain/auth/dto/sign-in.dto';
 import { SignUpDto } from '@/domain/auth/dto/sign-up.dto';
-import { SkipAuthDecorator } from '@/shared/decorators/skip-auth.decorator';
+import { SkipAuth } from '@/shared/decorators/skip-auth.decorator';
 
-@SkipAuthDecorator()
+@SkipAuth()
 @Controller({
   path: 'auth',
   version: '1',
