@@ -13,8 +13,11 @@ export class UserService {
   constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>) {}
 
   async findUserById(userId: string) {
-    const userData = await this.userRepository.findOneBy({
-      id: userId,
+    const userData = await this.userRepository.findOne({
+      where: {
+        id: userId,
+      },
+      relations: ['roles', 'organizations'],
     });
 
     if (!userData) {

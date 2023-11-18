@@ -1,9 +1,9 @@
 import { Controller, Get } from '@nestjs/common';
-import { SkipAuth } from '@/domain/auth/guards/skip-auth';
+import { SkipAuthDecorator } from '@/shared/decorators/skip-auth.decorator';
 import { Resource } from '@/shared/decorators/resource.decorator';
 import { MenuService } from '@/domain/menu/menu.service';
 
-@SkipAuth()
+@SkipAuthDecorator()
 @Resource({
   name: 'menus_manage',
   identify: 'menus:manage',

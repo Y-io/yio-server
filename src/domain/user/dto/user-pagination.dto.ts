@@ -8,10 +8,17 @@ class OrderByType {
   [key: string]: 'asc' | 'desc';
 }
 
-class UserSearch extends PickType(UserSerializeDto, ['username', 'email']) {
+class UserSearch {
+  @IsString()
+  username: string;
+
+  @IsString()
+  email: string;
+
   @IsString()
   @IsOptional()
   role: string;
+
   @IsString()
   @IsOptional()
   organization: string;

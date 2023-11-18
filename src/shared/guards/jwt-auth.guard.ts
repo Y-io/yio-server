@@ -1,7 +1,7 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
-import { IS_SKIP_AUTH_KEY } from './skip-auth';
+import { IS_SKIP_AUTH_KEY } from '../decorators/skip-auth.decorator';
 import { UserEntity } from '@/domain/user/user.entity';
 
 export type AuthRequest = {

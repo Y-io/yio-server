@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { CoreModule } from './core.module';
 import { DomainModule } from './domain/domain.module';
 import { APP_GUARD, MetadataScanner, ModulesContainer } from '@nestjs/core';
-import { JwtAuthGuard } from '@/domain/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@/shared/guards/jwt-auth.guard';
 import { RESOURCE_DEF } from '@/shared/decorators/resource.decorator';
 import { PERMISSION_DEF } from '@/shared/decorators/permission.decorator';
 
@@ -13,11 +13,12 @@ import { UserService } from '@/domain/user/user.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '@/domain/user/user.entity';
 import { In, Not, Repository } from 'typeorm';
-import { SystemModuleEntity } from '@/domain/system-module/system-module.entity';
+import { SystemModuleEntity } from '@/domain/system-module/entities/system-module.entity';
 import { RoleEntity } from '@/domain/role/role.entity';
-import { ResourceEntity } from '@/domain/resource/entities/resource.entity';
-import { PermissionEntity } from '@/domain/resource/entities/permission.entity';
-import { SuperAdminName } from '@/shared/constants';
+import { ResourceEntity } from '@/domain/system-module/entities/resource.entity';
+import { PermissionEntity } from '@/domain/system-module/entities/permission.entity';
+import { SUPER_ADMIN } from '@/shared/constants';
+import { PermissionGuard } from '@/shared/guards/permission.guard';
 
 @Module({
   imports: [CoreModule, DomainModule],
@@ -26,6 +27,11 @@ import { SuperAdminName } from '@/shared/constants';
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
+    },
+    {
+      // 必须在 JwtAuthGuard 后面，需要用户信息
+      provide: APP_GUARD,
+      useClass: PermissionGuard,
     },
     AppService,
   ],
@@ -154,14 +160,16 @@ export class AppModule implements OnModuleInit {
    * @private
    */
   private async loadPermissions() {
+    const resources = <ResourceEntity[]>(
+      [].concat(...[...this.systemModuleMap.values()].map((s) => s.resources))
+    );
+
     // 所有权限
     const allPermissions = <PermissionEntity[]>[].concat(
-      ...[]
-        .concat(...[...this.systemModuleMap.values()].map((s) => s.resources))
-        .map((metadataValue) => {
-          metadataValue.permissions.forEach((v) => (v.resource = metadataValue));
-          return metadataValue.permissions;
-        }),
+      ...resources.map((metadataValue) => {
+        metadataValue.permissions.forEach((v) => (v.resource = metadataValue));
+        return metadataValue.permissions;
+      }),
     );
 
     // 当前所有资源
@@ -219,11 +227,9 @@ export class AppModule implements OnModuleInit {
           if (resource && !!prototype) {
             const names = this.metadataScanner.getAllMethodNames(prototype);
 
-            const permissions: PermissionEntity[] = names
+            resource.permissions = names
               .map((name) => Reflect.getMetadata(PERMISSION_DEF, controller.instance, name))
-              .filter(Boolean);
-
-            resource.permissions = permissions;
+              .filter(Boolean) as PermissionEntity[];
 
             const moduleName = moduleValue.metatype.name;
 
@@ -253,14 +259,14 @@ export class AppModule implements OnModuleInit {
 
   private async createSuperAdmin() {
     const superAdmin = await this.userRepository.findOneBy({
-      username: SuperAdminName,
+      username: SUPER_ADMIN,
     });
 
     if (!superAdmin) {
       await this.userRepository.save(
         this.userRepository.create({
-          username: SuperAdminName,
-          password: await hash(SuperAdminName),
+          username: SUPER_ADMIN,
+          password: await hash(SUPER_ADMIN),
         }),
       );
     }

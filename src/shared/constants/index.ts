@@ -1,1 +1,1 @@
-export const SuperAdminName = 'superAdmin';
+export const SUPER_ADMIN = 'superAdmin';

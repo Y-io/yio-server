@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
-import { PermissionEntity } from '@/domain/resource/entities/permission.entity';
+import { PermissionEntity } from '@/domain/system-module/entities/permission.entity';
 import { YioBaseEntity } from '@/shared/yio-base.entity';
-import { SystemModuleEntity } from '@/domain/system-module/system-module.entity';
+import { SystemModuleEntity } from '@/domain/system-module/entities/system-module.entity';
 
 @Entity('resource')
 export class ResourceEntity extends YioBaseEntity {
@@ -16,6 +16,8 @@ export class ResourceEntity extends YioBaseEntity {
   @OneToMany(() => PermissionEntity, (permission) => permission.resource)
   permissions: PermissionEntity[];
 
-  @ManyToOne(() => SystemModuleEntity, (systemModule) => systemModule.resources)
+  @ManyToOne(() => SystemModuleEntity, (systemModule) => systemModule.resources, {
+    onDelete: 'CASCADE',
+  })
   systemModule: SystemModuleEntity;
 }

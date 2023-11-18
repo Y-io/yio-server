@@ -5,9 +5,9 @@ import { SerializeStrict } from '@/shared/decorators/serialize.decorator';
 import { UserPaginationSerializeDto } from '@/domain/user/dto/user-serialize.dto';
 import { Resource } from '@/shared/decorators/resource.decorator';
 import { Permission } from '@/shared/decorators/permission.decorator';
-import { AuthRequest } from '@/domain/auth/guards/jwt-auth.guard';
+import { AuthRequest } from '@/shared/guards/jwt-auth.guard';
 
-import { SuperAdminName } from '@/shared/constants';
+import { SUPER_ADMIN } from '@/shared/constants';
 
 @Resource({
   name: 'users_manage',
@@ -30,7 +30,7 @@ export class UserController {
   async findMany(@Request() req: AuthRequest, @Query() dto: UserFilterDto) {
     const include = {};
 
-    if (req.user.username !== SuperAdminName) {
+    if (req.user.username !== SUPER_ADMIN) {
     }
 
     return this.userService.findMany({

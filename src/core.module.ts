@@ -88,6 +88,14 @@ function createDailyRotateTransport(level: string, filename: string) {
         entities: [],
         synchronize: true,
         autoLoadEntities: true,
+        cache: {
+          type: 'redis',
+          options: {
+            host: configService.get('REDIS_HOST') as number,
+            port: configService.get('REDIS_PORT'),
+          },
+          ignoreErrors: true,
+        },
       }),
     }),
     ThrottlerModule.forRoot([

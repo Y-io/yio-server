@@ -1,10 +1,10 @@
 import { Controller, Get } from '@nestjs/common';
 import { RoleService } from '@/domain/role/role.service';
-import { SkipAuth } from '@/domain/auth/guards/skip-auth';
+import { SkipAuthDecorator } from '@/shared/decorators/skip-auth.decorator';
 import { Resource } from '@/shared/decorators/resource.decorator';
 import { Permission } from '@/shared/decorators/permission.decorator';
 
-@SkipAuth()
+@SkipAuthDecorator()
 @Resource({
   name: 'roles_manage',
   identify: 'roles:manage',

@@ -1,6 +1,6 @@
 import { Controller, Get, Request } from '@nestjs/common';
 import { AccountService } from '@/domain/account/account.service';
-import { AuthRequest } from '@/domain/auth/guards/jwt-auth.guard';
+import { AuthRequest } from '@/shared/guards/jwt-auth.guard';
 import { SerializeStrict } from '@/shared/decorators/serialize.decorator';
 
 import { Resource } from '@/shared/decorators/resource.decorator';
