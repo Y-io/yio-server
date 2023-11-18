@@ -1,13 +1,32 @@
 import { Expose, Type } from 'class-transformer';
-import { ValidateNested } from 'class-validator';
+import { IsOptional, ValidateNested } from 'class-validator';
 import { PaginationSerializeDto } from '@/shared/dto/base.dto';
-import { UserDto } from '@/domain/user/dto/user.dto';
+
+export class UserSerializeDto {
+  @IsOptional()
+  @Expose()
+  id: string;
+
+  @Expose()
+  @IsOptional()
+  username: string;
+
+  @Expose()
+  @IsOptional()
+  email: string;
+
+  @Expose()
+  roles: any;
+
+  @Expose()
+  organizations: any;
+}
 
 export class UserPaginationSerializeDto extends PaginationSerializeDto {
-  @Type(() => UserDto)
+  @Type(() => UserSerializeDto)
   @ValidateNested({
     each: true,
   })
   @Expose()
-  list: UserDto[];
+  list: UserSerializeDto[];
 }

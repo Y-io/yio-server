@@ -1,22 +1,31 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
-import {
-  paginationHelper,
-  transformObjToArr,
-  whereInputHelper,
-} from '@/shared/utils/many-helper';
-import { Prisma } from '@prisma/client';
-import { UserPaginationDto } from '@/domain/user/dto/user-pagination.dto';
+
+// import { paginationHelper } from '@/shared/utils/many-helper';
+import { UserFilterDto } from '@/domain/user/dto/user-pagination.dto';
+
+import { Repository } from 'typeorm';
+import { UserEntity } from '@/domain/user/user.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { CreateUserDto } from '@/domain/user/dto/create-user.dto';
 
 @Injectable()
 export class UserService {
-  constructor(private prisma: PrismaService) {}
+  constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>) {}
 
-  async getUserData(userId: string) {
-    const userData = await this.prisma.user.findUnique({
-      where: {
-        id: userId,
-      },
+  async findUserById(userId: string) {
+    const userData = await this.userRepository.findOneBy({
+      id: userId,
+    });
+
+    if (!userData) {
+      throw new NotFoundException('用户不存在');
+    }
+
+    return userData;
+  }
+  async findUserByUsername(username: string) {
+    const userData = await this.userRepository.findOneBy({
+      username,
     });
 
     if (!userData) {
@@ -26,32 +35,26 @@ export class UserService {
     return userData;
   }
 
-  async findMany(dto?: UserPaginationDto) {
-    const { page, size, filter } = dto;
+  async create(dto: CreateUserDto) {
+    const user = await this.userRepository.save(this.userRepository.create(dto));
+    if (!user) {
+      throw new NotFoundException('创建失败');
+    }
 
-    const pagination = paginationHelper(page, size);
-    const where: Prisma.UserWhereInput = whereInputHelper(filter);
-    const orderBy: Prisma.UserOrderByWithRelationInput[] = transformObjToArr(
-      dto.orderBy,
-    );
+    return user;
+  }
 
-    const queryArgs = {
-      ...pagination,
-      where,
-      orderBy,
-    };
+  async findMany(
+    dto: UserFilterDto & {
+      include?: any;
+    },
+  ) {
+    // const pagination = paginationHelper(dto.page, dto.pageSize);
 
-    const [data, count] = await this.prisma.$transaction([
-      this.prisma.user.findMany({
-        ...queryArgs,
-        include: {
-          organizations: true,
-          roles: true,
-        },
-      }),
-      this.prisma.user.count(queryArgs),
-    ]);
+    const [list, count] = await this.userRepository.findAndCount({
+      order: dto.orderBy,
+    });
 
-    return { list: data, page, size, count: count };
+    return { list, count, page: dto.page, pageSize: dto.pageSize };
   }
 }

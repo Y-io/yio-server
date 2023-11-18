@@ -2,11 +2,14 @@ import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { Reflector } from '@nestjs/core';
 import { IS_SKIP_AUTH_KEY } from './skip-auth';
-import { User } from '@prisma/client';
+import { UserEntity } from '@/domain/user/user.entity';
 
 export type AuthRequest = {
-  user: User;
+  user: UserEntity;
   authInfo: any;
+  route: {
+    path: string;
+  };
 };
 
 @Injectable()
@@ -23,10 +26,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
   // The inferred type of 'canActivate' cannot be named without a reference to '.pnpm/rxjs@7.8.1/node_modules/rxjs'. This is likely not portable.  A type annotation is necessary.
   // 遇到以上问题在 tsconfig.json compilerOptions 中配置 preserveSymlinks 为 true
   canActivate(context: ExecutionContext) {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(
-      IS_SKIP_AUTH_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_SKIP_AUTH_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
 
     if (isPublic) {
       return true;

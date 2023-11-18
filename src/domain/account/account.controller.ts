@@ -1,16 +1,25 @@
 import { Controller, Get, Request } from '@nestjs/common';
 import { AccountService } from '@/domain/account/account.service';
 import { AuthRequest } from '@/domain/auth/guards/jwt-auth.guard';
-import { SerializeStrict } from '@/common/decorators/serialize.decorator';
-import { UserDto } from '@/domain/user/dto/user.dto';
+import { SerializeStrict } from '@/shared/decorators/serialize.decorator';
 
-@Controller('account')
+import { Resource } from '@/shared/decorators/resource.decorator';
+import { UserSerializeDto } from '@/domain/user/dto/user-serialize.dto';
+
+@Resource({
+  name: 'account',
+  identify: 'account:manage',
+})
+@Controller({
+  path: 'account',
+  version: '1',
+})
 export class AccountController {
   constructor(private accountService: AccountService) {}
 
   @Get('/profile')
-  @SerializeStrict(UserDto)
-  async profile(@Request() req: AuthRequest) {
+  @SerializeStrict(UserSerializeDto)
+  async accountProfile(@Request() req: AuthRequest) {
     return this.accountService.getProfile(req.user.id);
   }
 }

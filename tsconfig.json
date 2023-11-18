@@ -19,6 +19,7 @@
     "noFallthroughCasesInSwitch": false,
     "esModuleInterop": true,
     "typeRoots": [
+      "./node_module/@prisma/client",
       "./src/typings"
     ],
     "paths": {

@@ -1,16 +1,12 @@
-import { Module, OnModuleInit } from '@nestjs/common';
+import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MurLockModule } from 'murlock';
-import {
-  WinstonModule,
-  utilities as nestWinstonModuleUtilities,
-} from 'nest-winston';
+import { WinstonModule, utilities as nestWinstonModuleUtilities } from 'nest-winston';
 import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { MurLockModuleOptions } from 'murlock/dist/interfaces/murlock-options.interface';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { PrismaService } from '@/prisma/prisma.service';
-import { hash } from '@node-rs/argon2';
+import { TypeOrmModule } from '@nestjs/typeorm';
 
 /**
  * 创建一个每日轮转的传输对象。
@@ -28,10 +24,7 @@ function createDailyRotateTransport(level: string, filename: string) {
     zippedArchive: true,
     maxSize: '20m',
     maxFiles: '14d',
-    format: winston.format.combine(
-      winston.format.timestamp(),
-      winston.format.simple(),
-    ),
+    format: winston.format.combine(winston.format.timestamp(), winston.format.simple()),
   });
 }
 
@@ -83,6 +76,20 @@ function createDailyRotateTransport(level: string, filename: string) {
         };
       },
     }),
+    TypeOrmModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'mysql',
+        host: configService.get('MYSQL_HOST'),
+        port: +configService.get('MYSQL_PORT'),
+        username: configService.get('MYSQL_USER'),
+        password: configService.get('MYSQL_PASSWORD'),
+        database: configService.get('MYSQL_DATABASE'),
+        entities: [],
+        synchronize: true,
+        autoLoadEntities: true,
+      }),
+    }),
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
@@ -91,25 +98,4 @@ function createDailyRotateTransport(level: string, filename: string) {
     ]),
   ],
 })
-export class CoreModule implements OnModuleInit {
-  constructor(private prisma: PrismaService) {}
-  async onModuleInit() {
-    await this.createSuperAdmin();
-  }
-
-  /**
-   * Create a system super administrator
-   */
-  private async createSuperAdmin() {
-    const sAdmin = await this.prisma.user.findUnique({
-      where: { username: 'sAdmin' },
-    });
-    if (sAdmin) return;
-    await this.prisma.user.create({
-      data: {
-        username: 'sAdmin',
-        password: await hash('sAdmin'),
-      },
-    });
-  }
-}
+export class CoreModule {}

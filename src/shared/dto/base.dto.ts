@@ -10,7 +10,7 @@ export class PaginationDto {
   @IsNumber()
   @Type(() => Number)
   @Expose()
-  size: number = 10;
+  pageSize: number = 10;
 }
 
 export class PaginationSerializeDto extends PaginationDto {

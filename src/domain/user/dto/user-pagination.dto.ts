@@ -1,20 +1,30 @@
-import { IsOptional, ValidateNested } from 'class-validator';
+import { IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { UserDto } from '@/domain/user/dto/user.dto';
 import { PaginationDto } from '@/shared/dto/base.dto';
+import { PickType } from '@nestjs/mapped-types';
+import { UserSerializeDto } from '@/domain/user/dto/user-serialize.dto';
 
 class OrderByType {
   [key: string]: 'asc' | 'desc';
 }
 
-export class UserPaginationDto extends PaginationDto {
+class UserSearch extends PickType(UserSerializeDto, ['username', 'email']) {
+  @IsString()
+  @IsOptional()
+  role: string;
+  @IsString()
+  @IsOptional()
+  organization: string;
+}
+
+export class UserFilterDto extends PaginationDto {
   @Type(() => OrderByType)
   @ValidateNested()
   @IsOptional()
   orderBy: OrderByType;
 
-  @Type(() => UserDto)
+  @Type(() => UserSearch)
   @ValidateNested()
   @IsOptional()
-  filter: UserDto;
+  search: UserSearch;
 }

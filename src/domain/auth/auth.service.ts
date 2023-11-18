@@ -1,49 +1,43 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
+
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import ms from 'ms';
 import { SignInDto } from '@/domain/auth/dto/sign-in.dto';
-import { User } from '@prisma/client';
 import { hash, verify } from '@node-rs/argon2';
 import { SignUpDto } from '@/domain/auth/dto/sign-up.dto';
-
-export type UserClaim = Pick<User, 'id' | 'username'> & {
-  hasPassword?: boolean;
-};
+import { InjectRepository } from '@nestjs/typeorm';
+import { UserService } from '@/domain/user/user.service';
+import { UserEntity } from '@/domain/user/user.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class AuthService {
   constructor(
-    private prisma: PrismaService,
+    private userService: UserService,
+    @InjectRepository(UserEntity) private userRepository: Repository<UserEntity>,
     private jwt: JwtService,
     private config: ConfigService,
   ) {}
 
   async signUp(dto: SignUpDto) {
-    const user = await this.prisma.user.findFirst({
-      where: {
-        username: dto.username,
-      },
+    const user = await this.userRepository.findOneBy({
+      username: dto.username,
     });
 
     if (user) throw new UnauthorizedException('账号已经存在');
 
     const hashedPassword = await hash(dto.password);
 
-    return this.prisma.user.create({
-      data: {
-        username: dto.username,
-        password: hashedPassword,
-      },
+    return this.userService.create({
+      username: dto.username,
+      password: hashedPassword,
     });
   }
 
   async signIn(dto: SignInDto) {
-    const user = await this.prisma.user.findUnique({
-      where: {
-        username: dto.username,
-      },
+    const user = await this.userRepository.findOneBy({
+      username: dto.username,
     });
 
     if (!user) throw new UnauthorizedException('该账号微注册');

@@ -21,12 +21,19 @@ export function whereInputHelper<T extends Record<string, any>>(filter = {}) {
 }
 
 export function transformObjToArr(originObj = {}, defaultObj = {}) {
-  const uniqueKeys = new Set([
-    ...Object.keys(originObj),
-    ...Object.keys(defaultObj),
-  ]);
+  const uniqueKeys = new Set([...Object.keys(originObj), ...Object.keys(defaultObj)]);
 
   return Array.from(uniqueKeys).map((key) => ({
     [key]: originObj[key] || defaultObj[key],
   }));
+}
+
+export function findManyCountHelper(args: any) {
+  return {
+    take: args.take,
+    skip: args.skip,
+    where: args.where,
+    orderBy: args.orderBy,
+    cursor: args.cursor,
+  };
 }
