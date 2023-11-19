@@ -1,4 +1,4 @@
-import { Column, Entity, Tree, TreeChildren, TreeParent, IsNull } from 'typeorm';
+import { Column, Entity, Tree, TreeChildren, TreeParent } from 'typeorm';
 import { YioBaseEntity } from '@/shared/yio-base.entity';
 import { Transform } from 'class-transformer';
 

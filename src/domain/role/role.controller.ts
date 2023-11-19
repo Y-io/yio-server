@@ -1,8 +1,10 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { RoleService } from '@/domain/role/role.service';
 import { SkipAuth } from '@/shared/decorators/skip-auth.decorator';
 import { Resource } from '@/shared/decorators/resource.decorator';
 import { Permission } from '@/shared/decorators/permission.decorator';
+import { CreateRoleDto } from '@/domain/role/dto/create-role.dto';
+import { SetPermissionsDto } from '@/domain/role/dto/set-permissions.dto';
 
 @SkipAuth()
 @Resource({
@@ -24,5 +26,43 @@ export class RoleController {
   @Get()
   async findMany() {
     return this.roleService.findMany();
+  }
+  @Permission({
+    name: 'find_role',
+    identify: 'roles:find_role',
+    action: 'find',
+  })
+  @Put(':id')
+  async findRoleById(@Param('id') id: string) {
+    return this.roleService.findRoleById(id);
+  }
+  @Permission({
+    name: 'create_role',
+    identify: 'roles:create_role',
+    action: 'create',
+  })
+  @Post()
+  async createRole(@Body() dto: CreateRoleDto) {
+    return this.roleService.createRole(dto);
+  }
+
+  @Permission({
+    name: 'delete_role',
+    identify: 'roles:delete_role',
+    action: 'delete',
+  })
+  @Delete(':id')
+  async deleteRoleById(@Param('id') id: string) {
+    return this.roleService.deleteRoleById(id);
+  }
+
+  @Permission({
+    name: 'set_permissions',
+    identify: 'roles:set_permissions',
+    action: 'update',
+  })
+  @Post()
+  async setPermissions(@Body() dto: SetPermissionsDto) {
+    return this.roleService.setPermissions(dto.id, dto.permissionIds);
   }
 }

@@ -1,4 +1,4 @@
-import { IsEnum, IsIn, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
 import { MenuTypeEnum } from '@/domain/menu/menu.entity';
 
 export class CreateMenuDto {
