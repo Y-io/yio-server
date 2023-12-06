@@ -6,18 +6,13 @@ import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { MurLockModuleOptions } from 'murlock/dist/interfaces/murlock-options.interface';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { TypeOrmModule } from '@nestjs/typeorm';
+import { PrismaModule } from '@/prisma/prisma.module';
+import { EventEmitterModule } from '@nestjs/event-emitter';
+import { envValidation } from '@/common/env.validation';
 
-/**
- * 创建一个每日轮转的传输对象。
- *
- * @param {string} level - 日志级别。
- * @param {string} filename - 日志文件的基本文件名。
- * @return {DailyRotateFile} - DailyRotateFile 对象。
- */
 function createDailyRotateTransport(level: string, filename: string) {
   return new DailyRotateFile({
-    level,
+    level: level,
     dirname: 'logs',
     filename: `${filename}-%DATE%.log`,
     datePattern: 'YYYY-MM-DD-HH',
@@ -30,8 +25,10 @@ function createDailyRotateTransport(level: string, filename: string) {
 
 @Module({
   imports: [
+    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
+      validate: envValidation,
     }),
     MurLockModule.registerAsync({
       inject: [ConfigService],
@@ -53,7 +50,7 @@ function createDailyRotateTransport(level: string, filename: string) {
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         const isProEnv = configService.get('ENVIRONMENT') === 'production';
-        const transportList = isProEnv
+        const transportList = !isProEnv
           ? [
               createDailyRotateTransport('error', 'error'),
               createDailyRotateTransport('info', 'app'),
@@ -76,28 +73,7 @@ function createDailyRotateTransport(level: string, filename: string) {
         };
       },
     }),
-    TypeOrmModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'mysql',
-        host: configService.get('MYSQL_HOST'),
-        port: +configService.get('MYSQL_PORT'),
-        username: configService.get('MYSQL_USER'),
-        password: configService.get('MYSQL_PASSWORD'),
-        database: configService.get('MYSQL_DATABASE'),
-        entities: [],
-        synchronize: true,
-        autoLoadEntities: true,
-        cache: {
-          type: 'redis',
-          options: {
-            host: configService.get('REDIS_HOST') as number,
-            port: configService.get('REDIS_PORT'),
-          },
-          ignoreErrors: true,
-        },
-      }),
-    }),
+    PrismaModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
@@ -105,5 +81,7 @@ function createDailyRotateTransport(level: string, filename: string) {
       },
     ]),
   ],
+  providers: [],
+  exports: [],
 })
 export class CoreModule {}

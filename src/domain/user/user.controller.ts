@@ -1,14 +1,12 @@
-import { Controller, Get, Query, Request } from '@nestjs/common';
+import { Controller, Get, Query } from '@nestjs/common';
 import { UserService } from '@/domain/user/user.service';
 import { UserFilterDto } from '@/domain/user/dto/user-pagination.dto';
-import { SerializeStrict } from '@/shared/decorators/serialize.decorator';
-import { UserPaginationSerializeDto } from '@/domain/user/dto/user-serialize.dto';
-import { Resource } from '@/shared/decorators/resource.decorator';
-import { Permission } from '@/shared/decorators/permission.decorator';
-import { AuthRequest } from '@/shared/guards/jwt-auth.guard';
-
-import { SUPER_ADMIN } from '@/shared/constants';
-import { SkipAuth } from '@/shared/decorators/skip-auth.decorator';
+import { SerializeStrict } from '@/common/decorators/serialize.decorator';
+import { UserPaginationSerializeDto, UserSerializeDto } from '@/domain/user/dto/user-serialize.dto';
+import { Resource } from '@/common/decorators/resource.decorator';
+import { Permission } from '@/common/decorators/permission.decorator';
+import { User } from '@/common/decorators/user.decorator';
+import { ActionLogger } from '@/common/decorators/action-logger.decorator';
 
 @Resource({
   name: 'users_manage',
@@ -28,15 +26,7 @@ export class UserController {
   })
   @Get()
   @SerializeStrict(UserPaginationSerializeDto)
-  async findMany(@Request() req: AuthRequest, @Query() dto: UserFilterDto) {
-    const include = {};
-
-    if (req.user.username !== SUPER_ADMIN) {
-    }
-
-    return this.userService.findMany({
-      ...dto,
-      include,
-    });
+  async findMany(@User() user: UserSerializeDto, @Query() dto: UserFilterDto) {
+    return this.userService.findMany(dto);
   }
 }

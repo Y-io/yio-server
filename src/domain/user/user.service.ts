@@ -1,35 +1,53 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-
-import { paginationHelper } from '@/shared/utils/many-helper';
+import { PrismaService } from '@/prisma/prisma.service';
+import { SUPER_ADMIN } from '@/common/constants';
 import { UserFilterDto } from '@/domain/user/dto/user-pagination.dto';
-
-import { In, Not, Repository } from 'typeorm';
-import { UserEntity } from '@/domain/user/user.entity';
-import { InjectRepository } from '@nestjs/typeorm';
+import { paginationHelper } from '@/common/utils/many-helper';
 import { CreateUserDto } from '@/domain/user/dto/create-user.dto';
-import { SUPER_ADMIN } from '@/shared/constants';
+import { UserModel } from '@/domain/user/types';
+
+function formatUser(user: UserModel) {
+  return {
+    ...user,
+    roles: user.roles.map((v) => v.role),
+    organizations: user.organizations.map((v) => v.organization),
+  };
+}
 
 @Injectable()
 export class UserService {
-  constructor(@InjectRepository(UserEntity) private userRepository: Repository<UserEntity>) {}
+  constructor(private prisma: PrismaService) {}
 
   async findUserById(userId: string) {
-    const userData = await this.userRepository.findOne({
+    const userData = await this.prisma.user.findUnique({
       where: {
         id: userId,
       },
-      relations: ['roles', 'organizations'],
+      include: {
+        roles: {
+          include: {
+            role: true,
+          },
+        },
+        organizations: {
+          include: {
+            organization: true,
+          },
+        },
+      },
     });
 
     if (!userData) {
       throw new NotFoundException('用户不存在');
     }
 
-    return userData;
+    return formatUser(userData);
   }
   async findUserByUsername(username: string) {
-    const userData = await this.userRepository.findOneBy({
-      username,
+    const userData = await this.prisma.user.findFirst({
+      where: {
+        username,
+      },
     });
 
     if (!userData) {
@@ -40,7 +58,9 @@ export class UserService {
   }
 
   async create(dto: CreateUserDto) {
-    const user = await this.userRepository.save(this.userRepository.create(dto));
+    const user = await this.prisma.user.create({
+      data: dto,
+    });
     if (!user) {
       throw new NotFoundException('创建失败');
     }
@@ -50,18 +70,26 @@ export class UserService {
 
   async findMany(
     dto: UserFilterDto & {
-      include?: any;
+      include?: never;
     },
   ) {
     const pagination = paginationHelper(dto.page, dto.pageSize);
 
-    const [list, count] = await this.userRepository.findAndCount({
-      ...pagination,
-      order: dto.orderBy,
-      where: {
-        username: Not(In([SUPER_ADMIN])),
-      },
-    });
+    const [list, count] = await this.prisma.$transaction([
+      this.prisma.user.findMany({
+        ...pagination,
+        orderBy: dto.orderBy,
+        where: {
+          username: { notIn: [SUPER_ADMIN] },
+        },
+      }),
+      this.prisma.user.count({
+        orderBy: dto.orderBy,
+        where: {
+          username: { notIn: [SUPER_ADMIN] },
+        },
+      }),
+    ]);
 
     return { list, count, page: dto.page, pageSize: dto.pageSize };
   }

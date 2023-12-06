@@ -1,17 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { MenuEntity, MenuTypeEnum } from '@/domain/menu/menu.entity';
-
-import { CreateMenuDto } from '@/domain/menu/dto/create-menu.dto';
-import { TreeRepository } from 'typeorm';
+import { CreateMenuDto } from './dto/create-menu.dto';
+import { MenuType } from '@prisma/client';
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Injectable()
 export class MenuService {
-  constructor(@InjectRepository(MenuEntity) private menuRepo: TreeRepository<MenuEntity>) {}
-
+  constructor(private prisma: PrismaService) {}
+  async list() {
+    return this.prisma.menu.findMany();
+  }
   async findMany(parentId?: string) {
     if (!parentId) {
-      return this.menuRepo.findTrees();
+      return this.prisma.menu.findMany();
     }
 
     const parentMenu = await this.findById(parentId);
@@ -19,57 +19,87 @@ export class MenuService {
       throw new NotFoundException('未找到');
     }
 
-    return this.menuRepo.findDescendantsTree(parentMenu);
+    return this.prisma.menu.findMany();
   }
 
   async findById(id?: string) {
-    const parentMenu = await this.menuRepo.findOneBy({
-      id: id,
+    const parentMenu = await this.prisma.menu.findUnique({
+      where: {
+        id: id,
+      },
     });
     if (!parentMenu) {
       throw new NotFoundException('未找到');
     }
 
-    return this.menuRepo.findDescendantsTree(parentMenu);
+    return this.prisma.menu.findMany();
   }
 
   async create(dto: CreateMenuDto) {
     const { parentId, ...data } = dto;
-    const menu = await this.menuRepo.findOneBy({
-      identify: dto.identify,
+
+    const menu = await this.prisma.menu.findUnique({
+      where: {
+        identify: dto.identify,
+      },
     });
 
     if (menu) throw new NotFoundException('该标识已存在');
 
     if (parentId) {
-      const parentMenu = await this.findById(parentId);
+      const parentMenu = await this.prisma.menu.findUnique({
+        where: {
+          id: parentId,
+        },
+      });
 
-      if (!parentMenu) {
-        throw new NotFoundException('未找到父菜单');
-      } else if (parentMenu.type !== MenuTypeEnum.DIRECTORY) {
+      if (parentMenu.type !== MenuType.DIRECTORY) {
         throw new NotFoundException('不能在非目录下创建子目录');
       }
-      return await this.menuRepo.save(
-        this.menuRepo.create({
+
+      await this.prisma.menu.create({
+        data: {
           name: data.name,
           identify: data.identify,
           type: data.type,
-          parent: parentMenu,
-        }),
-      );
+          parent: {
+            connect: {
+              id: parentId,
+              // parentId: parentId,
+            },
+          },
+        },
+      });
+
+      return;
     }
 
-    return await this.menuRepo.save(this.menuRepo.create(data));
+    return this.prisma.menu.create({
+      data: data,
+    });
   }
 
   async deleteById(id: string) {
-    const menu = await this.findById(id);
+    const menu = await this.prisma.menu.findUnique({
+      where: {
+        id: id,
+      },
+      include: {
+        subMenus: {
+          include: {
+            subMenus: true,
+          },
+        },
+      },
+    });
 
     if (!menu) {
       throw new NotFoundException('不存在');
-    } else if (menu.children.length) {
+    } else if (menu.subMenus.length) {
       throw new NotFoundException('有子项，不允许删除');
     }
-    await this.menuRepo.delete(id);
+    await this.prisma.menu.delete({
+      where: { id },
+    });
   }
 }

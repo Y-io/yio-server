@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional, IsString, IsUUID } from 'class-validator';
-import { MenuTypeEnum } from '@/domain/menu/menu.entity';
+import { MenuType } from '@prisma/client';
 
 export class CreateMenuDto {
   @IsUUID()
@@ -9,6 +9,6 @@ export class CreateMenuDto {
   name: string;
   @IsString()
   identify: string;
-  @IsEnum(MenuTypeEnum)
-  type: MenuTypeEnum;
+  @IsEnum(MenuType)
+  type: MenuType;
 }

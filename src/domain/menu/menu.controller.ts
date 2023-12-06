@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
-import { Resource } from '@/shared/decorators/resource.decorator';
+import { Resource } from '@/common/decorators/resource.decorator';
 import { MenuService } from '@/domain/menu/menu.service';
 import { CreateMenuDto } from '@/domain/menu/dto/create-menu.dto';
 

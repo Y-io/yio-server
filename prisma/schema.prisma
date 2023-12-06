@@ -1,0 +1,253 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 系统模块
+model SystemModule {
+  id   String @id @default(uuid())
+  name String @unique
+
+  resources Resource[]
+
+  @@map("system-module")
+}
+
+// 系统资源
+model Resource {
+  id       String @id @default(uuid())
+  identify String @unique
+  name     String
+
+  systemModuleId String
+  systemModule   SystemModule @relation(fields: [systemModuleId], references: [id], onDelete: Cascade)
+
+  permissions Permission[]
+
+  @@map("resource")
+}
+
+// 权限
+model Permission {
+  id       String @id @default(uuid())
+  identify String @unique
+  name     String
+
+  action String?
+
+  resource   Resource @relation(fields: [resourceId], references: [id], onDelete: Cascade)
+  resourceId String
+
+  menus Menu[]
+
+  @@map("permission")
+}
+
+// 用户
+model User {
+  id            String    @id @default(uuid())
+  username      String    @unique
+  email         String?
+  emailVerified DateTime?
+  password      String    @db.VarChar
+
+  // 用户状态
+  state UserState?
+
+  // 用户拥有的角色
+  roles         RolesOnUsers[]
+  // 用户所在组织
+  organizations OrganizationsOnUsers[]
+  // 用户的通知信息
+  notifications NotificationsOnUsers[]
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.Timestamptz(6)
+
+  @@map("user")
+}
+
+// 用户状态
+model UserState {
+  id String @id @default(uuid())
+
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  lastLoginTime DateTime @default(now()) @db.Timestamptz(6)
+
+  @@map("user-state")
+}
+
+// 用户与组织关联表
+model OrganizationsOnUsers {
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  @@id([userId, organizationId])
+  @@map("organization__user")
+}
+
+// 角色与用户关联表
+model RolesOnUsers {
+  role   Role   @relation(fields: [roleId], references: [id])
+  roleId String
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  @@id([userId, roleId])
+  @@map("role__user")
+}
+
+// 组织
+model Organization {
+  id   String @id @default(uuid())
+  name String
+
+  users OrganizationsOnUsers[]
+
+  parentId String?
+  parent   Organization?  @relation("ParentOrganizations", fields: [parentId], references: [id])
+  children Organization[] @relation("ParentOrganizations")
+
+  createdAt            DateTime               @default(now()) @db.Timestamptz(6)
+  updatedAt            DateTime               @updatedAt
+  deletedAt            DateTime?              @db.Timestamptz(6)
+  MenusOnOrganizations MenusOnOrganizations[]
+
+  @@map("organization")
+}
+
+// 角色
+model Role {
+  id   String @id @default(uuid())
+  name String @unique
+
+  menus MenusOnRoles[]
+  users RolesOnUsers[]
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.Timestamptz(6)
+
+  @@map("role")
+}
+
+// 菜单与角色关联表
+model MenusOnRoles {
+  menu   Menu   @relation(fields: [menuId], references: [id])
+  menuId String
+
+  role   Role   @relation(fields: [roleId], references: [id])
+  roleId String
+
+  @@id([roleId, menuId])
+  @@map("menu__role")
+}
+
+// 菜单与组织关联表
+model MenusOnOrganizations {
+  menu   Menu   @relation(fields: [menuId], references: [id])
+  menuId String
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+
+  @@id([organizationId, menuId])
+  @@map("menu__organization")
+}
+
+// 菜单类型
+enum MenuType {
+  DIRECTORY @map("directory")
+  BUTTON    @map("button")
+}
+
+// 菜单
+model Menu {
+  id       String @id @default(uuid())
+  identify String @unique
+  name     String
+
+  type MenuType
+
+  parentId String?
+  parent   Menu?   @relation("MenuSubMenus", fields: [parentId], references: [id], onDelete: NoAction)
+  subMenus Menu[]  @relation("MenuSubMenus")
+
+  roles         MenusOnRoles[]
+  organizations MenusOnOrganizations[]
+
+  permission   Permission? @relation(fields: [permissionId], references: [id])
+  permissionId String?
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.Timestamptz(6)
+
+  @@map("menu")
+}
+
+enum NotificationSource {
+  SYSTEM @map("system")
+  USER   @map("user")
+  OTHER  @map("other")
+}
+
+enum NotificationType {
+  ALL          @map("all")
+  USER         @map("user")
+  ROLE         @map("role")
+  ORGANIZATION @map("organization")
+}
+
+// 通知
+model Notification {
+  id          String             @id @default(uuid())
+  title       String
+  content     String
+  // 通知发布时间
+  publishTime DateTime?
+  // 通知类型（接受通知的对象），用户通知，角色通知，组织通知
+  type        NotificationType
+  // 接受通知的对象 id，如果是系统通知，就是所有用户（可为'all'），如果指定了 id,根据 type 判断是哪个群体或某用户
+  recipientId String
+  // 通知来源，系统通知，用户通知，其他通知
+  source      NotificationSource
+  managerId   String
+
+  users NotificationsOnUsers[]
+
+  createdAt DateTime  @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? @db.Timestamptz(6)
+}
+
+// 用户和通知中间表
+model NotificationsOnUsers {
+  user           User         @relation(fields: [userId], references: [id])
+  userId         String
+  notification   Notification @relation(fields: [notificationId], references: [id])
+  notificationId String
+
+  // 已读
+  isRead    Boolean   @default(false)
+  // 是否已被拉取过，如果已经拉取过，就无需再次拉取
+  // 与已读区别在于，该通知可能是弹窗，但用户并没有查看详细内容
+  pullTime  DateTime?
+  // 删除时间，用户是否删除该通知
+  deletedAt DateTime? @db.Timestamptz(6)
+
+  @@id([userId, notificationId])
+  @@map("notification__user")
+}

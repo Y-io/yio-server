@@ -1,33 +1,33 @@
-import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
-import { RoleEntity } from '@/domain/role/role.entity';
-import { InjectRepository } from '@nestjs/typeorm';
-import { CreateRoleDto } from '@/domain/role/dto/create-role.dto';
-import { PermissionEntity } from '@/domain/system-module/entities/permission.entity';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { PrismaService } from '@/prisma/prisma.service';
+import { NotificationService } from '@/domain/notification/notification.service';
 
 @Injectable()
 export class RoleService {
   constructor(
-    @InjectRepository(RoleEntity) private roleRepo: Repository<RoleEntity>,
-    @InjectRepository(PermissionEntity) private permissionRepo: Repository<PermissionEntity>,
+    private prisma: PrismaService,
+    private notificationService: NotificationService,
   ) {}
 
   // 查找所有
   async findMany() {
-    return this.roleRepo.find({
-      relations: {
-        users: true,
-      },
-    });
+    return this.prisma.role.findMany();
   }
 
   // 查找角色
   async findRoleById(id: string) {
-    const role = await this.roleRepo.findOne({
+    const role = await this.prisma.role.findUnique({
       where: {
         id: id,
       },
-      relations: ['permissions'],
+      include: {
+        menus: {
+          include: {
+            menu: true,
+          },
+        },
+      },
     });
 
     if (role) {
@@ -39,8 +39,8 @@ export class RoleService {
 
   // 创建角色
   async createRole(dto: CreateRoleDto) {
-    const role = await this.roleRepo.findOneBy({
-      name: dto.name,
+    const role = await this.prisma.role.findUnique({
+      where: { name: dto.name },
     });
 
     if (role) {
@@ -53,10 +53,10 @@ export class RoleService {
 
   // 设置权限
   async setPermissions(id: string, permissionIds: string[]) {
-    const role = await this.findRoleById(id);
+    await this.findRoleById(id);
 
-    const permissions = await this.permissionRepo.findBy({
-      id: In(permissionIds),
+    const permissions = await this.prisma.permission.findMany({
+      where: { id: { in: permissionIds } },
     });
 
     permissionIds.forEach((permissionId) => {
@@ -66,22 +66,30 @@ export class RoleService {
       }
     });
 
-    role.permissions = permissions;
-    await this.roleRepo.save(role);
+    // await this.prisma.role.update({
+    //   where: {
+    //     id,
+    //   },
+    //   data: {
+    //     permissions: {
+    //       create: permissionIds.map((permissionId) => ({
+    //         permissionId,
+    //       })),
+    //     },
+    //   },
+    // });
+
+    // this.notificationService.create();
   }
 
   // 删除角色
   async deleteRoleById(id: string) {
-    const role = await this.findRoleById(id);
-    try {
-      await this.roleRepo
-        .createQueryBuilder('role')
-        .relation(RoleEntity, 'permissions')
-        .of(role)
-        .remove(role.permissions);
-      await this.roleRepo.save(role);
-    } catch (e) {
-      throw new HttpException('数据库错误', 500);
-    }
+    await this.findRoleById(id);
+
+    await this.prisma.role.delete({
+      where: {
+        id,
+      },
+    });
   }
 }

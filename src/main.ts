@@ -9,7 +9,9 @@ import helmet from 'helmet';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: ['log'],
+  });
   const configService = app.get(ConfigService);
   const port = configService.get('PORT') || 3000;
   const globalPrefix = 'api';
@@ -49,8 +51,6 @@ async function bootstrap() {
 
   await app.listen(port);
 
-  Logger.log(
-    `🚀 应用程序正在运行: http://localhost:${port}/${globalPrefix}/v1`,
-  );
+  Logger.log(`🚀 应用程序正在运行: http://localhost:${port}/${globalPrefix}/v1`);
 }
 bootstrap();

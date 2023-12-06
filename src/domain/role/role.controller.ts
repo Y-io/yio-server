@@ -1,28 +1,18 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
 import { RoleService } from '@/domain/role/role.service';
-import { SkipAuth } from '@/shared/decorators/skip-auth.decorator';
-import { Resource } from '@/shared/decorators/resource.decorator';
-import { Permission } from '@/shared/decorators/permission.decorator';
+import { SkipAuth } from '@/common/decorators/skip-auth.decorator';
+import { Resource } from '@/common/decorators/resource.decorator';
+import { Permission } from '@/common/decorators/permission.decorator';
 import { CreateRoleDto } from '@/domain/role/dto/create-role.dto';
 import { SetPermissionsDto } from '@/domain/role/dto/set-permissions.dto';
 
 @SkipAuth()
-@Resource({
-  name: 'roles_manage',
-  identify: 'roles:manage',
-})
-@Controller({
-  path: 'roles',
-  version: '1',
-})
+@Resource({ name: 'roles_manage', identify: 'roles:manage' })
+@Controller({ path: 'roles', version: '1' })
 export class RoleController {
   constructor(private roleService: RoleService) {}
 
-  @Permission({
-    name: 'find_roles',
-    identify: 'roles:find_roles',
-    action: 'find',
-  })
+  @Permission({ name: 'find_roles', identify: 'roles:find_roles', action: 'find' })
   @Get()
   async findMany() {
     return this.roleService.findMany();
