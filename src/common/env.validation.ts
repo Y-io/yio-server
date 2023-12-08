@@ -1,9 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString, validateSync } from 'class-validator';
-import { randomUUID } from 'node:crypto';
 import { createJwtKeyPair } from '@/common/utils/jwt-key-pair';
-import { Algorithm, sign as jwtSign } from '@node-rs/jsonwebtoken';
-import { getExpiresIn, getUtcTimestamp } from '@/domain/auth/services/auth.service';
 
 enum Environment {
   Development = 'development',
@@ -49,12 +46,6 @@ const examplePrivateKey =
   'fFYUJL/ZhkuRqywr9eeef4woqcahRANCAAS37SF+5FqNTd/aCXC+jPe6aZckfoq6\n' +
   'T7Gn+ibiNyXD9lHGlEgUZGLQmQmnqvQRNzBk9J/ekA1jIJbufg3Eo8LR\n' +
   '-----END PRIVATE KEY-----';
-
-// const examplePublicKey =
-//   '-----BEGIN PUBLIC KEY-----\n' +
-//   'MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE2eKpwfvlNBGhWOSF7ebfgZqfdkTq\n' +
-//   '3YVv2HbTcl/K3qt2nfQZLLnJBvaSMXXisC6Xdh3HG0WOLrvdAnXHWV2IYg==\n' +
-//   '-----END PUBLIC KEY-----';
 
 export function envValidation(config: Record<string, unknown>) {
   const validatedConfig = plainToInstance(EnvironmentVariables, config, {

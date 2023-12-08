@@ -2,13 +2,7 @@ import { Module, OnModuleInit } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CoreModule } from './core.module';
-import {
-  APP_FILTER,
-  APP_GUARD,
-  APP_INTERCEPTOR,
-  MetadataScanner,
-  ModulesContainer,
-} from '@nestjs/core';
+import { MetadataScanner, ModulesContainer } from '@nestjs/core';
 
 import { hash } from '@node-rs/argon2';
 import { PERMISSION_DEF, RESOURCE_DEF } from '@/common/decorators';
@@ -24,9 +18,7 @@ import { RoleModule } from '@/domain/role/role.module';
 import { MenuModule } from '@/domain/menu/menu.module';
 import { NotificationModule } from '@/domain/notification/notification.module';
 import { MessageModule } from '@/domain/message/message.module';
-import { HttpExceptionFilter } from '@/common/filters';
-import { HttpExceptionInterceptor } from '@/common/interceptors/http-exception.interceptor';
-import { JwtGuard } from '@/common/guards';
+import { QueueModule } from './queue/queue.module';
 
 type ResourceMap = { name: string; identify: string; moduleName: string };
 type PermissionMap = {
@@ -48,23 +40,10 @@ type PermissionMap = {
     NotificationModule,
     MessageModule,
     EventsModule,
+    QueueModule,
   ],
   controllers: [AppController],
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: JwtGuard,
-    },
-    {
-      provide: APP_FILTER,
-      useClass: HttpExceptionFilter,
-    },
-    {
-      provide: APP_INTERCEPTOR,
-      useClass: HttpExceptionInterceptor,
-    },
-    AppService,
-  ],
+  providers: [AppService],
   exports: [],
 })
 export class AppModule implements OnModuleInit {

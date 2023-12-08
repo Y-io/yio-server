@@ -5,10 +5,22 @@ import { WinstonModule, utilities as nestWinstonModuleUtilities } from 'nest-win
 import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { MurLockModuleOptions } from 'murlock/dist/interfaces/murlock-options.interface';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { PrismaModule } from '@/prisma/prisma.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { envValidation } from '@/common/env.validation';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { join } from 'node:path';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { QueueModule } from '@/queue/queue.module';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
+import { JwtGuard } from '@/common/guards';
+import { HttpExceptionFilter } from '@/common/filters';
+import { HttpExceptionInterceptor } from '@/common/interceptors/http-exception.interceptor';
+import { UserModule } from '@/domain/user/user.module';
+import { AuthModule } from '@/domain/auth/auth.module';
+import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
+import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
 
 function createDailyRotateTransport(level: string, filename: string) {
   return new DailyRotateFile({
@@ -25,37 +37,74 @@ function createDailyRotateTransport(level: string, filename: string) {
 
 @Module({
   imports: [
-    EventEmitterModule.forRoot(),
     ConfigModule.forRoot({
       isGlobal: true,
       validate: envValidation,
     }),
+    // 速率限制
+    ThrottlerModule.forRootAsync({
+      inject: [RedisService],
+      useFactory: (redisService: RedisService) => ({
+        storage: new ThrottlerStorageRedisService(redisService.getClient()),
+        throttlers: [
+          {
+            ttl: 60000,
+            limit: 10,
+          },
+        ],
+      }),
+    }),
+    // db
+    PrismaModule,
+    // redis
+    RedisModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        config: {
+          url: configService.get('REDIS_URL'),
+        },
+      }),
+    }),
+    // 事件通信
+    EventEmitterModule.forRoot(),
+    // redis 分布式事务锁
     MurLockModule.registerAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
         const murLockModuleOptions = {
           redisOptions: {
-            host: configService.get('REDIS_HOST') as number,
-            port: configService.get('REDIS_PORT'),
+            url: configService.get('REDIS_URL'),
           },
-          wait: configService.get('REDIS_WAIT'),
-          maxAttempts: configService.get('REDIS_MAX_ATTEMPTS'),
-          logLevel: configService.get('REDIS_LOG_LEVEL'),
         } as MurLockModuleOptions;
 
         return murLockModuleOptions;
       },
     }),
+    // 邮件
+    MailerModule.forRoot({
+      transport: {
+        host: 'smtp.example.com',
+        port: 587,
+        auth: {
+          user: 'username',
+          pass: 'password',
+        },
+      },
+      template: {
+        dir: join(__dirname, 'templates'),
+        adapter: new HandlebarsAdapter(),
+      },
+    }),
+    // 日志
     WinstonModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: async (configService: ConfigService) => {
-        const isProEnv = configService.get('ENVIRONMENT') === 'production';
-        const transportList = !isProEnv
-          ? [
-              createDailyRotateTransport('error', 'error'),
-              createDailyRotateTransport('info', 'app'),
-            ]
-          : [];
+      useFactory: async () => {
+        // const isProEnv = configService.get('ENVIRONMENT') === 'production';
+        const transportList = [
+          createDailyRotateTransport('error', 'error'),
+          createDailyRotateTransport('info', 'app'),
+        ];
+
         return {
           transports: [
             new winston.transports.Console({
@@ -73,15 +122,31 @@ function createDailyRotateTransport(level: string, filename: string) {
         };
       },
     }),
-    PrismaModule,
-    ThrottlerModule.forRoot([
-      {
-        ttl: 60000,
-        limit: 10,
-      },
-    ]),
+
+    // 队列
+    QueueModule,
+
+    UserModule,
+    AuthModule,
   ],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JwtGuard,
+    },
+    {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: HttpExceptionInterceptor,
+    },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
   exports: [],
 })
 export class CoreModule {}

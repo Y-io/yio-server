@@ -2,6 +2,7 @@ import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/commo
 import { Resource } from '@/common/decorators/resource.decorator';
 import { MenuService } from '@/domain/menu/menu.service';
 import { CreateMenuDto } from '@/domain/menu/dto/create-menu.dto';
+import { ActionLogger } from '@/common/decorators';
 
 @Resource({
   name: 'menus_manage',
@@ -25,6 +26,10 @@ export class MenuController {
   }
 
   @Delete(':id')
+  @ActionLogger({
+    template: '<%= username %> 删除了菜单 <%= username %>',
+    keys: ['username', ''],
+  })
   async deleteMenu(@Param('id') id: string) {
     await this.menuService.deleteById(id);
     return 'ok';

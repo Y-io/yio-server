@@ -22,8 +22,6 @@ export class HttpExceptionInterceptor implements NestInterceptor {
   intercept(context: ExecutionContextHost, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       tap((data) => {
-        // console.log({ data });
-
         const actionOptions = this.reflector.get<ActionLoggerOptions>(
           USER_ACTION_LOG_DEF,
           context.getHandler(),
