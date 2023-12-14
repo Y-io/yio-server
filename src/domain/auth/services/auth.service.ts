@@ -5,21 +5,25 @@ import { ConfigService } from '@nestjs/config';
 import ms from 'ms';
 import { hash, verify } from '@node-rs/argon2';
 import { sign as jwtSign, verify as jwtVerify, Algorithm } from '@node-rs/jsonwebtoken';
-import { SignUpDto } from '../dto/sign-up.dto';
-import { SignInDto } from '../dto/sign-in.dto';
+import { RegisterDto } from '../dto/register.dto';
+import { LoginDto } from '../dto/login.dto';
 import { PrismaService } from '@/prisma/prisma.service';
 import { User } from '@prisma/client';
+import { MailerService } from '@nestjs-modules/mailer';
+import { RedisService } from '@liaoliaots/nestjs-redis';
 
 export type UserClaim = Pick<User, 'id' | 'username'>;
 
 @Injectable()
 export class AuthService {
   constructor(
-    private config: ConfigService,
+    private configService: ConfigService,
     private prisma: PrismaService,
+    private mailService: MailerService,
+    private redisService: RedisService,
   ) {}
 
-  async signUp(dto: SignUpDto) {
+  async register(dto: RegisterDto) {
     const user = await this.prisma.user.findUnique({
       where: { username: dto.username },
     });
@@ -33,7 +37,7 @@ export class AuthService {
     });
   }
 
-  async signIn(dto: SignInDto) {
+  async login(dto: LoginDto) {
     const user = await this.prisma.user.findUnique({
       where: { username: dto.username },
     });
@@ -57,8 +61,20 @@ export class AuthService {
     });
   }
 
+  async sendEmailLoginCode(email: string) {
+    await this.mailService.sendMail({
+      subject: '登录验证码',
+      from: {
+        name: '系统邮件',
+        address: this.configService.get('EMAIL_USER'),
+      },
+      to: email,
+      template: 'login_code',
+    });
+  }
+
   async createToken(userClaim: UserClaim) {
-    const expiresIn = getExpiresIn(this.config.get('JWT_ACCESS_TOKEN_EXPIRES_IN'));
+    const expiresIn = getExpiresIn(this.configService.get('JWT_ACCESS_TOKEN_EXPIRES_IN'));
     const now = getUtcTimestamp();
 
     const token = await jwtSign(
@@ -66,14 +82,14 @@ export class AuthService {
         data: userClaim,
         iat: now,
         exp: now + expiresIn,
-        iss: this.config.get('JWT_SERVER_ID'),
+        iss: this.configService.get('JWT_SERVER_ID'),
         sub: userClaim.id,
         aud: userClaim.username,
         jti: randomUUID({
           disableEntropyCache: true,
         }),
       },
-      this.config.get('JWT_PRIVATE_KEY'),
+      this.configService.get('JWT_PRIVATE_KEY'),
       {
         algorithm: Algorithm.ES256,
       },
@@ -86,7 +102,7 @@ export class AuthService {
   }
 
   async refreshToken(userClaim: UserClaim) {
-    const expiresIn = getExpiresIn(this.config.get('JWT_REFRESH_TOKEN_EXPIRES_IN'));
+    const expiresIn = getExpiresIn(this.configService.get('JWT_REFRESH_TOKEN_EXPIRES_IN'));
     const now = getUtcTimestamp();
 
     return jwtSign(
@@ -94,14 +110,14 @@ export class AuthService {
         data: userClaim,
         iat: now,
         exp: now + expiresIn,
-        iss: this.config.get('JWT_SERVER_ID'),
+        iss: this.configService.get('JWT_SERVER_ID'),
         sub: userClaim.id,
         aud: userClaim.username,
         jti: randomUUID({
           disableEntropyCache: true,
         }),
       },
-      this.config.get('JWT_PRIVATE_KEY'),
+      this.configService.get('JWT_PRIVATE_KEY'),
       {
         algorithm: Algorithm.ES256,
       },
@@ -109,9 +125,9 @@ export class AuthService {
   }
 
   async verifyToken(token: string) {
-    const jwtPublicKey = this.config.get('JWT_PUBLIC_KEY');
-    const jwtServerId = this.config.get('JWT_SERVER_ID');
-    const jwtLeeway = Number(this.config.get('JWT_LEEWAY'));
+    const jwtPublicKey = this.configService.get('JWT_PUBLIC_KEY');
+    const jwtServerId = this.configService.get('JWT_SERVER_ID');
+    const jwtLeeway = Number(this.configService.get('JWT_LEEWAY'));
 
     try {
       const data = (

@@ -21,6 +21,7 @@ import { UserModule } from '@/domain/user/user.module';
 import { AuthModule } from '@/domain/auth/auth.module';
 import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
 import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
+import { HeaderResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
 
 function createDailyRotateTransport(level: string, filename: string) {
   return new DailyRotateFile({
@@ -71,29 +72,30 @@ function createDailyRotateTransport(level: string, filename: string) {
     MurLockModule.registerAsync({
       inject: [ConfigService],
       useFactory: async (configService: ConfigService) => {
-        const murLockModuleOptions = {
+        return {
           redisOptions: {
             url: configService.get('REDIS_URL'),
           },
         } as MurLockModuleOptions;
-
-        return murLockModuleOptions;
       },
     }),
     // 邮件
-    MailerModule.forRoot({
-      transport: {
-        host: 'smtp.example.com',
-        port: 587,
-        auth: {
-          user: 'username',
-          pass: 'password',
+    MailerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        transport: {
+          host: 'smtp.example.com',
+          port: 587,
+          auth: {
+            user: configService.get('EMAIL_USER'),
+            pass: configService.get('EMAIL_PASSWORD'),
+          },
         },
-      },
-      template: {
-        dir: join(__dirname, 'templates'),
-        adapter: new HandlebarsAdapter(),
-      },
+        template: {
+          dir: join(__dirname, 'templates'),
+          adapter: new HandlebarsAdapter(),
+        },
+      }),
     }),
     // 日志
     WinstonModule.forRootAsync({
@@ -121,6 +123,16 @@ function createDailyRotateTransport(level: string, filename: string) {
           ],
         };
       },
+    }),
+
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      loaderOptions: {
+        path: join(__dirname, '/i18n/'),
+        watch: true,
+      },
+      resolvers: [{ use: QueryResolver, options: ['lang'] }, new HeaderResolver(['x-lang'])],
+      typesOutputPath: join(__dirname, '../src/common/i18n.generated.ts'),
     }),
 
     // 队列

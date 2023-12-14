@@ -1,7 +1,7 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post } from '@nestjs/common';
 import { AuthService } from '@/domain/auth/services/auth.service';
-import { SignInDto } from '@/domain/auth/dto/sign-in.dto';
-import { SignUpDto } from '@/domain/auth/dto/sign-up.dto';
+import { EmailLoginDto, LoginDto } from '@/domain/auth/dto/login.dto';
+import { RegisterDto } from '@/domain/auth/dto/register.dto';
 import { SkipAuth } from '@/common/decorators/skip-auth.decorator';
 
 @SkipAuth()
@@ -11,13 +11,22 @@ import { SkipAuth } from '@/common/decorators/skip-auth.decorator';
 })
 export class AuthController {
   constructor(private authService: AuthService) {}
-  @Post('sign-up')
-  async signUp(@Body() dto: SignUpDto) {
-    return this.authService.signUp(dto);
+  @Post('register')
+  async register(@Body() dto: RegisterDto) {
+    return this.authService.register(dto);
   }
 
-  @Post('sign-in')
-  async signIn(@Body() dto: SignInDto) {
-    return this.authService.signIn(dto);
+  @Post('login')
+  async signIn(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
   }
+
+  @Get('email_login_code/:email')
+  async sendEmailLogin(@Param('email') email: string) {
+    await this.authService.sendEmailLoginCode(email);
+    return 'ok';
+  }
+
+  @Post('email_login')
+  async emailLogin(@Body() dto: EmailLoginDto) {}
 }

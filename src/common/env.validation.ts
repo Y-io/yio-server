@@ -9,7 +9,7 @@ enum Environment {
   Provision = 'provision',
 }
 
-class EnvironmentVariables {
+export class EncConfigVariables {
   @IsEnum(Environment)
   NODE_ENV: Environment;
 
@@ -38,6 +38,31 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   JWT_PUBLIC_KEY: string;
+
+  @IsNumber()
+  REDIS_SSL: number;
+  @IsNumber()
+  REDIS_JOB_DB: number;
+  @IsString()
+  REDIS_HOST: string;
+  @IsNumber()
+  REDIS_PORT: number;
+  @IsNumber()
+  REDIS_WAIT: number;
+  @IsNumber()
+  REDIS_MAX_ATTEMPTS: number;
+  @IsString()
+  REDIS_LOG_LEVEL: string;
+
+  @IsString()
+  REDIS_URL: string;
+
+  @IsString()
+  @IsOptional()
+  EMAIL_USER: string;
+  @IsString()
+  @IsOptional()
+  EMAIL_PASSWORD: string;
 }
 
 const examplePrivateKey =
@@ -48,7 +73,7 @@ const examplePrivateKey =
   '-----END PRIVATE KEY-----';
 
 export function envValidation(config: Record<string, unknown>) {
-  const validatedConfig = plainToInstance(EnvironmentVariables, config, {
+  const validatedConfig = plainToInstance(EncConfigVariables, config, {
     enableImplicitConversion: true,
   });
   const errors = validateSync(validatedConfig, { skipMissingProperties: false });
