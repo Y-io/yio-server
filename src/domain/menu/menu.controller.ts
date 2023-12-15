@@ -1,8 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Post, Query } from '@nestjs/common';
-import { Resource } from '@/common/decorators/resource.decorator';
-import { MenuService } from '@/domain/menu/menu.service';
-import { CreateMenuDto } from '@/domain/menu/dto/create-menu.dto';
-import { ActionLogger } from '@/common/decorators';
+import { MenuService } from './menu.service';
+import { ActionLogger, Resource } from '../../common/decorators';
+import { CreateMenuDto } from './dto/create-menu.dto';
 
 @Resource({
   name: 'menus_manage',

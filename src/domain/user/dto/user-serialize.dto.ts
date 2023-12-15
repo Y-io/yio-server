@@ -1,7 +1,7 @@
 import { Expose, Type } from 'class-transformer';
 import { IsOptional, ValidateNested } from 'class-validator';
-import { PaginationSerializeDto } from '@/common/dto/base.dto';
 import { Organization, Role } from '@prisma/client';
+import { PaginationSerializeDto } from '../../../common/dto/base.dto';
 
 export class UserSerializeDto {
   @IsOptional()

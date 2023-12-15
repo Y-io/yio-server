@@ -1,8 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import { Resource } from '@/common/decorators/resource.decorator';
-import { SystemModuleService } from '@/domain/system-module/system-module.service';
-import { SkipAuth } from '@/common/decorators/skip-auth.decorator';
-import { Permission } from '@/common/decorators/permission.decorator';
+import { SystemModuleService } from './system-module.service';
+import { Permission, Resource, SkipAuth } from '../../common/decorators';
 
 @SkipAuth()
 @Resource({

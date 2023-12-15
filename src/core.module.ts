@@ -6,22 +6,23 @@ import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { MurLockModuleOptions } from 'murlock/dist/interfaces/murlock-options.interface';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { PrismaModule } from '@/prisma/prisma.module';
+
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { envValidation } from '@/common/env.validation';
 import { MailerModule } from '@nestjs-modules/mailer';
 import { join } from 'node:path';
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
-import { QueueModule } from '@/queue/queue.module';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
-import { JwtGuard } from '@/common/guards';
-import { HttpExceptionFilter } from '@/common/filters';
-import { HttpExceptionInterceptor } from '@/common/interceptors/http-exception.interceptor';
-import { UserModule } from '@/domain/user/user.module';
-import { AuthModule } from '@/domain/auth/auth.module';
 import { ThrottlerStorageRedisService } from 'nestjs-throttler-storage-redis';
 import { RedisModule, RedisService } from '@liaoliaots/nestjs-redis';
 import { HeaderResolver, I18nModule, QueryResolver } from 'nestjs-i18n';
+import { envValidation } from './common/env.validation';
+import { PrismaModule } from './prisma/prisma.module';
+import { QueueModule } from './queue/queue.module';
+import { UserModule } from './domain/user/user.module';
+import { AuthModule } from './domain/auth/auth.module';
+import { JwtGuard } from './common/guards';
+import { HttpExceptionFilter } from './common/filters';
+import { HttpExceptionInterceptor } from './common/interceptors/http-exception.interceptor';
 
 function createDailyRotateTransport(level: string, filename: string) {
   return new DailyRotateFile({

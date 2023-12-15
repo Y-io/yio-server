@@ -1,7 +1,8 @@
 import { Catch, ExceptionFilter, HttpException, Logger } from '@nestjs/common';
-import { REQUEST_ID } from '@/common/constants';
+
 import { Request, Response } from 'express';
 import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
+import { REQUEST_ID } from '../constants';
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {

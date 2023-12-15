@@ -2,9 +2,9 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Sse, Request } from 
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
-import { AuthRequest } from '@/common/guards';
-import { Permission, Resource } from '@/common/decorators';
-import { NotificationSubscribeGroup } from '@/domain/notification/types';
+import { AuthRequest } from '../../common/guards';
+import { Permission, Resource } from '../../common/decorators';
+import { NotificationSubscribeGroup } from './types';
 
 @Resource({ name: 'notifications_manage', identify: 'notifications:manage' })
 @Controller({

@@ -5,20 +5,22 @@ import { CoreModule } from './core.module';
 import { MetadataScanner, ModulesContainer } from '@nestjs/core';
 
 import { hash } from '@node-rs/argon2';
-import { PERMISSION_DEF, RESOURCE_DEF } from '@/common/decorators';
-import { Permission, Resource } from '@prisma/client';
-import { PrismaService } from '@/prisma/prisma.service';
-import { SUPER_ADMIN } from '@/common/constants';
-import { EventsModule } from './events/events.module';
-import { AuthModule } from '@/domain/auth/auth.module';
-import { UserModule } from '@/domain/user/user.module';
-import { SystemModuleModule } from '@/domain/system-module/system-module.module';
-import { OrganizationModule } from '@/domain/organization/organization.module';
-import { RoleModule } from '@/domain/role/role.module';
-import { MenuModule } from '@/domain/menu/menu.module';
-import { NotificationModule } from '@/domain/notification/notification.module';
-import { MessageModule } from '@/domain/message/message.module';
+
 import { QueueModule } from './queue/queue.module';
+import { NotificationModule } from './domain/notification/notification.module';
+import { SystemModuleModule } from './domain/system-module/system-module.module';
+import { UserModule } from './domain/user/user.module';
+import { AuthModule } from './domain/auth/auth.module';
+import { OrganizationModule } from './domain/organization/organization.module';
+import { RoleModule } from './domain/role/role.module';
+import { MenuModule } from './domain/menu/menu.module';
+import { MessageModule } from './domain/message/message.module';
+import { EventsModule } from './events/events.module';
+import { PrismaService } from './prisma/prisma.service';
+import { Permission, Resource } from '@prisma/client';
+import { PERMISSION_DEF, RESOURCE_DEF } from './common/decorators';
+import { SUPER_ADMIN } from './common/constants';
+import { HttpModule } from '@nestjs/axios';
 
 type ResourceMap = { name: string; identify: string; moduleName: string };
 type PermissionMap = {
@@ -30,6 +32,7 @@ type PermissionMap = {
 
 @Module({
   imports: [
+    HttpModule,
     CoreModule,
     SystemModuleModule,
     UserModule,

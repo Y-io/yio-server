@@ -1,17 +1,14 @@
 import { CallHandler, Inject, Injectable, LoggerService, NestInterceptor } from '@nestjs/common';
 import { Observable, tap } from 'rxjs';
 import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
-import { REQUEST_ID } from '@/common/constants';
-
 import { Request } from 'express';
-import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
-import { Reflector } from '@nestjs/core';
-import { AuthRequest } from '@/common/guards';
-import {
-  ActionLoggerOptions,
-  USER_ACTION_LOG_DEF,
-} from '@/common/decorators/action-logger.decorator';
 import _ from 'lodash';
+import { Reflector } from '@nestjs/core';
+import { ExecutionContextHost } from '@nestjs/core/helpers/execution-context-host';
+
+import { ActionLoggerOptions, USER_ACTION_LOG_DEF } from '../decorators';
+import { AuthRequest } from '../guards';
+import { REQUEST_ID } from '../constants';
 
 @Injectable()
 export class HttpExceptionInterceptor implements NestInterceptor {
@@ -19,6 +16,7 @@ export class HttpExceptionInterceptor implements NestInterceptor {
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private reflector: Reflector,
   ) {}
+
   intercept(context: ExecutionContextHost, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       tap((data) => {

@@ -1,6 +1,6 @@
 import { plainToInstance } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString, validateSync } from 'class-validator';
-import { createJwtKeyPair } from '@/common/utils/jwt-key-pair';
+import { createJwtKeyPair } from './utils/jwt-key-pair';
 
 enum Environment {
   Development = 'development',

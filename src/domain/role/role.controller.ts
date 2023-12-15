@@ -1,10 +1,8 @@
 import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
-import { RoleService } from '@/domain/role/role.service';
-import { SkipAuth } from '@/common/decorators/skip-auth.decorator';
-import { Resource } from '@/common/decorators/resource.decorator';
-import { Permission } from '@/common/decorators/permission.decorator';
-import { CreateRoleDto } from '@/domain/role/dto/create-role.dto';
-import { SetPermissionsDto } from '@/domain/role/dto/set-permissions.dto';
+import { RoleService } from './role.service';
+import { Permission, Resource, SkipAuth } from '../../common/decorators';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { SetPermissionsDto } from './dto/set-permissions.dto';
 
 @SkipAuth()
 @Resource({ name: 'roles_manage', identify: 'roles:manage' })

@@ -3,11 +3,11 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { filter, fromEvent } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { NotificationEvent } from '@/domain/notification/events/notification.event';
-import { PrismaService } from '@/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { EventsGateway } from '../../events/events.gateway';
 import { NotificationType } from '@prisma/client';
-import { NotificationSubscribeGroup } from '@/domain/notification/types';
-import { EventsGateway } from '@/events/events.gateway';
+import { NotificationSubscribeGroup } from './types';
+import { NotificationEvent } from './events/notification.event';
 
 const notificationEvent = 'notification-event';
 

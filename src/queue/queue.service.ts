@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { InjectQueue } from '@nestjs/bull';
 import { Queue } from 'bull';
-import { emailAction, EmailType, queueKeys } from '@/queue/type';
 import { User } from '@prisma/client';
+import { emailAction, EmailType, queueKeys } from './type';
 
 @Injectable()
 export class QueueService {

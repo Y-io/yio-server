@@ -5,14 +5,14 @@ import {
   ContextType,
   Injectable,
 } from '@nestjs/common';
-
-import { AuthService } from '@/domain/auth/services/auth.service';
-import { UserService } from '@/domain/user/user.service';
-import { SUPER_ADMIN } from '@/common/constants';
 import { Permission } from '@prisma/client';
-import { IS_SKIP_AUTH_KEY, PERMISSION_DEF } from '@/common/decorators';
-import { PrismaService } from '@/prisma/prisma.service';
-import { UserSerializeDto } from '@/domain/user/dto/user-serialize.dto';
+
+import { UserSerializeDto } from '../../domain/user/dto/user-serialize.dto';
+import { UserService } from '../../domain/user/user.service';
+import { AuthService } from '../../domain/auth/services/auth.service';
+import { PrismaService } from '../../prisma/prisma.service';
+import { SUPER_ADMIN } from '../constants';
+import { IS_SKIP_AUTH_KEY, PERMISSION_DEF } from '../decorators';
 
 export type AuthRequest = {
   user: UserSerializeDto;

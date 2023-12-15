@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { EmailProcessor } from '@/queue/email.processor';
 import { BullModule } from '@nestjs/bull';
 import { ConfigService } from '@nestjs/config';
 
 import { QueueService } from './queue.service';
-import { queueKeys } from '@/queue/type';
+import { EmailProcessor } from './email.processor';
+import { queueKeys } from './type';
 
 @Module({
   imports: [

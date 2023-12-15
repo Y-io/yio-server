@@ -7,10 +7,10 @@ import { hash, verify } from '@node-rs/argon2';
 import { sign as jwtSign, verify as jwtVerify, Algorithm } from '@node-rs/jsonwebtoken';
 import { RegisterDto } from '../dto/register.dto';
 import { LoginDto } from '../dto/login.dto';
-import { PrismaService } from '@/prisma/prisma.service';
 import { User } from '@prisma/client';
 import { MailerService } from '@nestjs-modules/mailer';
 import { RedisService } from '@liaoliaots/nestjs-redis';
+import { PrismaService } from '../../../prisma/prisma.service';
 
 export type UserClaim = Pick<User, 'id' | 'username'>;
 

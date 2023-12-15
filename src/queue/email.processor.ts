@@ -2,7 +2,7 @@ import { Process, Processor } from '@nestjs/bull';
 import { MailerService } from '@nestjs-modules/mailer';
 import { Job } from 'bull';
 import { User } from '@prisma/client';
-import { EmailType, queueKeys } from '@/queue/type';
+import { EmailType, queueKeys } from './type';
 
 @Processor(queueKeys.EMAIL)
 export class EmailProcessor {

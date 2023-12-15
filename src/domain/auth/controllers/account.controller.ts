@@ -1,10 +1,8 @@
 import { Controller, Get, Request } from '@nestjs/common';
-import { AccountService } from '@/domain/auth/services/account.service';
-import { SerializeStrict } from '@/common/decorators/serialize.decorator';
-
-import { Resource } from '@/common/decorators/resource.decorator';
-import { UserSerializeDto } from '@/domain/user/dto/user-serialize.dto';
-import { AuthRequest } from '@/common/guards';
+import { AccountService } from '../services/account.service';
+import { Resource, SerializeStrict } from '../../../common/decorators';
+import { UserSerializeDto } from '../../user/dto/user-serialize.dto';
+import { AuthRequest } from '../../../common/guards';
 
 @Resource({
   name: 'account',

@@ -1,12 +1,8 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { UserService } from '@/domain/user/user.service';
-import { UserFilterDto } from '@/domain/user/dto/user-pagination.dto';
-import { SerializeStrict } from '@/common/decorators/serialize.decorator';
-import { UserPaginationSerializeDto, UserSerializeDto } from '@/domain/user/dto/user-serialize.dto';
-import { Resource } from '@/common/decorators/resource.decorator';
-import { Permission } from '@/common/decorators/permission.decorator';
-import { User } from '@/common/decorators/user.decorator';
-import { ActionLogger } from '@/common/decorators/action-logger.decorator';
+import { UserService } from './user.service';
+import { Permission, Resource, SerializeStrict, User } from '../../common/decorators';
+import { UserPaginationSerializeDto, UserSerializeDto } from './dto/user-serialize.dto';
+import { UserFilterDto } from './dto/user-pagination.dto';
 
 @Resource({
   name: 'users_manage',

@@ -1,10 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { PrismaService } from '@/prisma/prisma.service';
-import { SUPER_ADMIN } from '@/common/constants';
-import { UserFilterDto } from '@/domain/user/dto/user-pagination.dto';
-import { paginationHelper } from '@/common/utils/many-helper';
-import { CreateUserDto } from '@/domain/user/dto/create-user.dto';
-import { UserModel } from '@/domain/user/types';
+import { UserModel } from './types';
+import { PrismaService } from '../../prisma/prisma.service';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UserFilterDto } from './dto/user-pagination.dto';
+import { paginationHelper } from '../../common/utils/many-helper';
+import { SUPER_ADMIN } from '../../common/constants';
 
 function formatUser(user: UserModel) {
   return {

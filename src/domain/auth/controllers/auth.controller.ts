@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Param, Post } from '@nestjs/common';
-import { AuthService } from '@/domain/auth/services/auth.service';
-import { EmailLoginDto, LoginDto } from '@/domain/auth/dto/login.dto';
-import { RegisterDto } from '@/domain/auth/dto/register.dto';
-import { SkipAuth } from '@/common/decorators/skip-auth.decorator';
+import { AuthService } from '../services/auth.service';
+import { SkipAuth } from '../../../common/decorators';
+import { RegisterDto } from '../dto/register.dto';
+import { EmailLoginDto, LoginDto } from '../dto/login.dto';
 
 @SkipAuth()
 @Controller({

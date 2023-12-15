@@ -1,6 +1,6 @@
 import { IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
-import { PaginationDto } from '@/common/dto/base.dto';
+import { PaginationDto } from '../../../common/dto/base.dto';
 
 class OrderByType {
   [key: string]: 'asc' | 'desc';

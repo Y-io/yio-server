@@ -22,9 +22,6 @@
       "./node_module/@prisma/client",
       "./src/typings"
     ],
-    "paths": {
-      "@/*": ["src/*"]
-    },
     "preserveSymlinks": true
   }
 }
