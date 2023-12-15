@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Permission } from '@prisma/client';
 
-import { UserSerializeDto } from '../../domain/user/dto/user-serialize.dto';
+import { UserModelDto } from '../../domain/user/dto/user-serialize.dto';
 import { UserService } from '../../domain/user/user.service';
 import { AuthService } from '../../domain/auth/services/auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -15,7 +15,7 @@ import { SUPER_ADMIN } from '../constants';
 import { IS_SKIP_AUTH_KEY, PERMISSION_DEF } from '../decorators';
 
 export type AuthRequest = {
-  user: UserSerializeDto;
+  user: UserModelDto;
   authInfo: any;
   route: {
     path: string;

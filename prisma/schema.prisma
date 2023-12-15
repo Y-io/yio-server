@@ -54,9 +54,9 @@ model Permission {
 model User {
   id            String    @id @default(uuid())
   username      String    @unique
-  email         String?
-  emailVerified DateTime?
   password      String    @db.VarChar
+  email         String?   @unique
+  emailVerified DateTime?
 
   // 用户状态
   state UserState?
