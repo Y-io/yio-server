@@ -1,19 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UserModel } from './types';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { paginationHelper } from '../../common/utils/many-helper';
 import { SUPER_ADMIN } from '../../common/constants';
 import { FindUsersDto } from './dto/find-users.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
-function formatUser(user: UserModel) {
-  return {
-    ...user,
-    roles: user.roles.map((v) => v.role),
-    organizations: user.organizations.map((v) => v.organization),
-  };
-}
+import { formatUser } from '../../common/utils/user.util';
 
 @Injectable()
 export class UserService {

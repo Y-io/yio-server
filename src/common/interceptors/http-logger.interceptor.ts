@@ -11,7 +11,7 @@ import { AuthRequest } from '../guards';
 import { REQUEST_ID } from '../constants';
 
 @Injectable()
-export class HttpExceptionInterceptor implements NestInterceptor {
+export class HttpLoggerInterceptor implements NestInterceptor {
   constructor(
     @Inject(WINSTON_MODULE_NEST_PROVIDER) private readonly logger: LoggerService,
     private reflector: Reflector,
@@ -20,10 +20,7 @@ export class HttpExceptionInterceptor implements NestInterceptor {
   intercept(context: ExecutionContextHost, next: CallHandler): Observable<any> {
     return next.handle().pipe(
       tap((data) => {
-        const actionOptions = this.reflector.get<ActionLoggerOptions>(
-          USER_ACTION_LOG_DEF,
-          context.getHandler(),
-        );
+        const actionOptions = this.reflector.get<ActionLoggerOptions>(USER_ACTION_LOG_DEF, context.getHandler());
 
         if (actionOptions) {
           const httpContext = context.switchToHttp();

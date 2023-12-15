@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MurLockModule } from 'murlock';
-import { WinstonModule, utilities as nestWinstonModuleUtilities } from 'nest-winston';
+import { utilities as nestWinstonModuleUtilities, WinstonModule } from 'nest-winston';
 import * as winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { MurLockModuleOptions } from 'murlock/dist/interfaces/murlock-options.interface';
@@ -22,7 +22,7 @@ import { UserModule } from './domain/user/user.module';
 import { AuthModule } from './domain/auth/auth.module';
 import { JwtGuard } from './common/guards';
 import { HttpExceptionFilter } from './common/filters';
-import { HttpExceptionInterceptor } from './common/interceptors/http-exception.interceptor';
+import { HttpLoggerInterceptor } from './common/interceptors/http-logger.interceptor';
 
 function createDailyRotateTransport(level: string, filename: string) {
   return new DailyRotateFile({
@@ -103,10 +103,7 @@ function createDailyRotateTransport(level: string, filename: string) {
       inject: [ConfigService],
       useFactory: async () => {
         // const isProEnv = configService.get('ENVIRONMENT') === 'production';
-        const transportList = [
-          createDailyRotateTransport('error', 'error'),
-          createDailyRotateTransport('info', 'app'),
-        ];
+        const transportList = [createDailyRotateTransport('error', 'error'), createDailyRotateTransport('info', 'app')];
 
         return {
           transports: [
@@ -153,7 +150,7 @@ function createDailyRotateTransport(level: string, filename: string) {
     },
     {
       provide: APP_INTERCEPTOR,
-      useClass: HttpExceptionInterceptor,
+      useClass: HttpLoggerInterceptor,
     },
     {
       provide: APP_GUARD,

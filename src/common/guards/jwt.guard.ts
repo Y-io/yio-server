@@ -1,18 +1,12 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  UnauthorizedException,
-  ContextType,
-  Injectable,
-} from '@nestjs/common';
+import { CanActivate, ContextType, ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { Permission } from '@prisma/client';
 
 import { UserModelDto } from '../../domain/user/dto/user-serialize.dto';
-import { UserService } from '../../domain/user/user.service';
 import { AuthService } from '../../domain/auth/services/auth.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { SUPER_ADMIN } from '../constants';
 import { IS_SKIP_AUTH_KEY, PERMISSION_DEF } from '../decorators';
+import { AccountService } from '../../domain/auth/services/account.service';
 
 export type AuthRequest = {
   user: UserModelDto;
@@ -25,7 +19,7 @@ export type AuthRequest = {
 @Injectable()
 export class JwtGuard implements CanActivate {
   constructor(
-    private readonly userService: UserService,
+    private readonly accountService: AccountService,
     private readonly authService: AuthService,
     private prisma: PrismaService,
   ) {}
@@ -52,7 +46,7 @@ export class JwtGuard implements CanActivate {
     if (type === 'Bearer') {
       const payload = await this.authService.verifyToken(jwt);
 
-      const user = await this.userService.findUserById(payload.id);
+      const user = await this.accountService.getProfile(payload.id);
 
       if (!user) return false;
 

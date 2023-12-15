@@ -1,9 +1,9 @@
 import { Expose, Type } from 'class-transformer';
 import { IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Organization, Role } from '@prisma/client';
-import { PaginationSerializeDto } from '../../../common/dto/base.dto';
+import { BaseModelDto, PaginationResultDto } from '../../../common/dto/base.dto';
 
-export class UserModelDto {
+export class UserModelDto extends BaseModelDto {
   @IsOptional()
   @Expose()
   id: string;
@@ -22,7 +22,7 @@ export class UserModelDto {
   organizations: Organization[];
 }
 
-export class UserPaginationSerializeDto extends PaginationSerializeDto {
+export class UserPaginationSerializeDto extends PaginationResultDto {
   @Type(() => UserModelDto)
   @ValidateNested({
     each: true,

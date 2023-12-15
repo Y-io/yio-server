@@ -1,4 +1,4 @@
-import { OmitType, PartialType } from '@nestjs/mapped-types';
-import { CreateNotificationDto } from './create-notification.dto';
+import { PartialType, PickType } from '@nestjs/mapped-types';
+import { NotificationModelDto } from './notification-model.dto';
 
-export class UpdateNotificationDto extends PartialType(OmitType(CreateNotificationDto, [])) {}
+export class UpdateNotificationDto extends PartialType(PickType(NotificationModelDto, ['title', 'content', 'type'])) {}

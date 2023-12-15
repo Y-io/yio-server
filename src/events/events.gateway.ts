@@ -9,6 +9,9 @@ import {
 import { EventsService } from './events.service';
 import { Server, Socket } from 'socket.io';
 import { Notification } from '@prisma/client';
+import { UseGuards, UseInterceptors } from '@nestjs/common';
+import { JwtGuard } from '../common/guards';
+import { NotificationWsInterceptor } from '../common/interceptors/notification-ws.interceptor';
 
 @WebSocketGateway({
   cors: {
@@ -16,10 +19,10 @@ import { Notification } from '@prisma/client';
   },
 })
 export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
-  constructor(private readonly eventsService: EventsService) {}
-
   @WebSocketServer()
   server: Server;
+
+  constructor(private readonly eventsService: EventsService) {}
 
   afterInit(server: Server): any {
     // console.log({ server });
@@ -31,8 +34,17 @@ export class EventsGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     // console.log({ handleDisconnect: client });
   }
 
+  @UseInterceptors(NotificationWsInterceptor)
+  @UseGuards(JwtGuard)
   @SubscribeMessage('notification')
   async handleNotification(data: Notification) {
+    return data;
+  }
+
+  @UseInterceptors(NotificationWsInterceptor)
+  @UseGuards(JwtGuard)
+  @SubscribeMessage('message')
+  async handleMessage(data: any) {
     return data;
   }
 

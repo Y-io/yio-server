@@ -1,13 +1,13 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
+import { CreateNotificationDto } from '../dto/create-notification.dto';
+import { UpdateNotificationDto } from '../dto/update-notification.dto';
 import { filter, fromEvent } from 'rxjs';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { PrismaService } from '../../prisma/prisma.service';
-import { EventsGateway } from '../../events/events.gateway';
-import { NotificationType } from '@prisma/client';
-import { NotificationSubscribeGroup } from './types';
-import { NotificationEvent } from './events/notification.event';
+import { PrismaService } from '../../../prisma/prisma.service';
+import { EventsGateway } from '../../../events/events.gateway';
+import { NotificationType, Prisma } from '@prisma/client';
+import { NotificationSubscribeGroup } from '../types';
+import { NotificationEvent } from '../events/notification.event';
 
 const notificationEvent = 'notification-event';
 
@@ -80,8 +80,23 @@ export class NotificationService {
     return notification;
   }
 
-  findAll() {
-    return `This action returns all notification`;
+  async findAll(userId?: string) {
+    let where: Prisma.NotificationWhereInput;
+    if (userId) {
+      where = {
+        users: {
+          some: {
+            userId: userId,
+          },
+        },
+      };
+    }
+
+    return this.prisma.notification.findMany({
+      where,
+      skip: 0,
+      take: 10,
+    });
   }
 
   async findOne(id: string) {
@@ -111,6 +126,43 @@ export class NotificationService {
         id,
       },
     });
+  }
+
+  // 获取用户最新通知
+  async findUserLatestNotification(userId: string) {
+    const list = await this.prisma.notification.findMany({
+      where: {
+        users: {
+          some: {
+            userId: userId,
+            isRead: false,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      take: 10,
+    });
+
+    return list;
+  }
+
+  // 获取用户通知列表列表
+  async findUserNotifications(userId: string) {
+    const list = await this.prisma.notification.findMany({
+      where: {
+        users: {
+          some: {
+            userId: userId,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+    return list;
   }
 
   subscribe(group: NotificationSubscribeGroup) {
