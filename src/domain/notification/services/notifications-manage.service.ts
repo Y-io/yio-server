@@ -19,10 +19,10 @@ export class NotificationsManageService {
   /**
    * 查找多个通知
    */
-  async findMany(userId: string, dto: NotificationFilterDto) {
+  async findMany(dto: NotificationFilterDto) {
     const pagination = paginationHelper(dto.page, dto.pageSize);
     const where = whereInputHelper(dto.filter);
-    return this.notificationBaseService.findMany({
+    return this.notificationBaseService.findManyWithPagination({
       ...pagination,
       orderBy: dto.orderBy,
       where: where,

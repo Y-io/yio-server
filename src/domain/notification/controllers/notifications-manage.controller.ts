@@ -25,7 +25,7 @@ export class NotificationsManageController {
   @Permission({ name: 'find_notifications', identify: 'notifications-manage:find_notifications', action: 'find' })
   @Get()
   async findMany(@User('id') userId: string, @Query() dto: NotificationFilterDto) {
-    return this.notificationManageService.findMany({});
+    return this.notificationManageService.findMany(dto);
   }
 
   @SerializeStrict(NotificationManageModelDto)

@@ -11,6 +11,10 @@ export class NotificationsClientService {
     private prisma: PrismaService,
   ) {}
 
+  async findUserUnReadNotifications(userId: string) {
+    return this.notificationBaseService.findUserUnReadNotifications(userId);
+  }
+
   async findUnique(userId: string, id: string) {
     return this.notificationBaseService.findUserUnDeletedNotification(userId, id);
   }
@@ -33,6 +37,6 @@ export class NotificationsClientService {
     });
   }
   async delete(id: string, userId: string) {
-    return this.notificationBaseService.delete(id, userId);
+    return this.notificationBaseService.userDeleteNotification(id, userId);
   }
 }

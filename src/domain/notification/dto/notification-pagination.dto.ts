@@ -1,7 +1,6 @@
 import { FilterDto, PaginationResultDto } from '../../../common/dto/base.dto';
 import { Expose, Type } from 'class-transformer';
 import { ValidateNested } from 'class-validator';
-import { UserModelDto } from '../../user/dto/user-serialize.dto';
 import { NotificationManageModelDto } from './notification-manage-model.dto';
 import { NotificationModelDto } from './notification-model.dto';
 
@@ -11,7 +10,7 @@ export class NotificationPaginationResultDto extends PaginationResultDto {
     each: true,
   })
   @Expose()
-  list: UserModelDto[];
+  list: NotificationModelDto[];
 }
 
 export class NotificationManagePaginationResultDto extends PaginationResultDto {

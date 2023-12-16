@@ -112,6 +112,13 @@ export class NotificationBaseService {
    * 查找多个通知
    */
   async findMany(args: Prisma.NotificationFindManyArgs) {
+    return this.prisma.notification.findMany(args);
+  }
+
+  /**
+   * 通知列表分页查询
+   */
+  async findManyWithPagination(args: Prisma.NotificationFindManyArgs) {
     const countArgs: Prisma.NotificationCountArgs = {
       where: args.where,
       skip: args.skip,
@@ -127,29 +134,11 @@ export class NotificationBaseService {
 
     return { list, count };
   }
-
   /**
    * 查找用户未读通知
    * @param userId
    */
   async findUserUnReadNotifications(userId: string) {
-    return this.findMany({
-      where: {
-        users: {
-          some: {
-            userId,
-            deletedAt: null,
-          },
-        },
-        deletedAt: null,
-      },
-    });
-  }
-
-  /**
-   * 查找用户通知
-   */
-  async findUserNotifications(userId: string) {
     return this.findMany({
       where: {
         users: {
@@ -187,6 +176,21 @@ export class NotificationBaseService {
             userId,
           },
         },
+      },
+    });
+  }
+
+  /**
+   * 用户删除通知
+   */
+  async userDeleteNotification(id: string, userId: string) {
+    return this.prisma.notificationsOnUsers.updateMany({
+      where: {
+        userId,
+        notificationId: id,
+      },
+      data: {
+        deletedAt: new Date(),
       },
     });
   }
