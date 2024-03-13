@@ -1,0 +1,45 @@
+version: '3.9'
+
+services:
+
+  postgres:
+    container_name: public-postgres
+    image: postgres:alpine3.18
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - /home/postgres/data:/data
+    networks:
+      - public-apps-net
+
+  redis:
+    container_name: public-redis
+    image: redis:7.2
+    env_file:
+      - .env
+
+    environment:
+      - TZ=Asia/Shanghai # 设置时区
+    volumes: # 配置数据卷
+      - /home/redis/data:/data
+      - /etc/redis/redis.conf:/etc/redis/redis.conf
+    ports: # 映射端口
+      - "6379:6379"
+    sysctls: # 设置容器中的内核参数
+      - net.core.somaxconn=1024
+    #  - vm.overcommit_memory=1
+    command: /bin/sh -c "echo 'vm.overcommit_memory = 1' >> /etc/sysctl.conf
+      && redis-server /etc/redis/redis.conf --appendonly yes" # 指定配置文件并开启持久化
+    privileged: true # 使用该参数，container内的root拥有真正的root权限。否则，container内的root只是外部的一个普通用户权限
+
+    networks:
+      - public-apps-net
+
+name:
+  public-apps
+
+networks:
+  public-apps-net:
+
