@@ -1,58 +1,50 @@
 import { plainToInstance, Transform } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, IsString, validateSync } from 'class-validator';
-import { createJwtKeyPair } from './utils/create-jwt-key-pair';
+import {
+  IsEnum,
+  IsNumber,
+  IsOptional,
+  IsString,
+  validateSync,
+} from 'class-validator';
+import { createJwtKeyPair } from '@/utils/create-jwt-key-pair';
 
-enum Environment {
+export enum EnvEnum {
   Development = 'development',
   Production = 'production',
-  Test = 'test',
-  Provision = 'provision',
+  Staging = 'staging',
 }
 
 class EncConfigVariables {
-  @IsEnum(Environment)
-  NODE_ENV: Environment;
+  @IsEnum(EnvEnum)
+  NODE_ENV: EnvEnum;
 
   @IsNumber()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   PORT: number;
+  @IsString()
+  SERVER_ID: string;
+
   @IsString()
   JWT_SECRET: string;
   @IsString()
   JWT_ACCESS_TOKEN_EXPIRES_IN: string;
   @IsString()
   JWT_REFRESH_TOKEN_EXPIRES_IN: string;
-  @IsString()
-  JWT_SERVER_ID: string;
   @IsNumber()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   JWT_LEEWAY: number;
-  // @IsString()
-  // @IsOptional()
-  // JWT_PRIVATE_KEY: string;
-  // @IsString()
-  // @IsOptional()
-  // JWT_PUBLIC_KEY: string;
+  @IsString()
+  @IsOptional()
+  JWT_PRIVATE_KEY: string;
+  @IsString()
+  @IsOptional()
+  JWT_PUBLIC_KEY: string;
 
-  @IsNumber()
-  @Transform(({ value }) => Number(value), { toClassOnly: true })
-  REDIS_SSL: number;
-  @IsNumber()
-  @Transform(({ value }) => Number(value), { toClassOnly: true })
-  REDIS_JOB_DB: number;
   @IsString()
   REDIS_HOST: string;
   @IsNumber()
   @Transform(({ value }) => Number(value), { toClassOnly: true })
   REDIS_PORT: number;
-  @IsNumber()
-  @Transform(({ value }) => Number(value), { toClassOnly: true })
-  REDIS_WAIT: number;
-  @IsNumber()
-  @Transform(({ value }) => Number(value), { toClassOnly: true })
-  REDIS_MAX_ATTEMPTS: number;
-  @IsString()
-  REDIS_LOG_LEVEL: string;
   @IsString()
   REDIS_URL: string;
 
@@ -97,7 +89,8 @@ export function envValidation(config: Record<string, unknown>) {
     throw new Error(errors.toString());
   }
 
-  const { jwtPublicKey: JWT_PUBLIC_KEY, jwtPrivateKey: JWT_PRIVATE_KEY } = createJwtKeyPair(examplePrivateKey);
+  const { jwtPublicKey: JWT_PUBLIC_KEY, jwtPrivateKey: JWT_PRIVATE_KEY } =
+    createJwtKeyPair(examplePrivateKey);
 
   return {
     ...validatedConfig,
