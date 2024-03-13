@@ -44,6 +44,7 @@
     "lodash": "^4.17.21",
     "nestjs-cls": "^4.2.0",
     "nestjs-throttler-storage-redis": "^0.4.3",
+    "parse-duration": "^1.1.0",
     "pg": "^8.11.3",
     "reflect-metadata": "^0.2.1",
     "rxjs": "^7.8.1",
